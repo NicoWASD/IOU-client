@@ -1,0 +1,230 @@
+<title>Marca IOU</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: hoja de marca; el wordmark grande abre, debajo construcción, variantes, ícono y reglas. */
+:root {
+  --paper: #F6F7F9; --surface: #FFFFFF; --graphite: #1B1E25; --pencil: #5F6573; --rule: #E2E5EB;
+  --birome: #2337C6; --birome-soft: #E8EBFB; --resaltador: #FFE45C; --guide: #E0476B;
+  --mark-top: #1B1E25; --mark-bottom: #2337C6;
+  --font-ui: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #111318; --surface: #191C23; --graphite: #E8EAF0; --pencil: #A3A9B6; --rule: #2A2E38;
+  --birome: #8B9BFF; --birome-soft: #1E2447; --guide: #FF7A95; --mark-top: #E8EAF0; --mark-bottom: #8B9BFF; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #111318; --surface: #191C23; --graphite: #E8EAF0; --pencil: #A3A9B6; --rule: #2A2E38;
+  --birome: #8B9BFF; --birome-soft: #1E2447; --guide: #FF7A95; --mark-top: #E8EAF0; --mark-bottom: #8B9BFF; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--graphite); font-family: var(--font-ui); font-size: 16px; line-height: 1.55; }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.in { max-width: 1080px; margin: 0 auto; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h2 { font-size: 26px; letter-spacing: -.02em; }
+p { margin: 0; max-width: 62ch; }
+.muted { color: var(--pencil); }
+section { border-top: 1px solid var(--rule); padding-block: 56px; }
+section .in { display: grid; gap: 24px; }
+
+.hero { padding-block: 56px 64px; }
+.hero .in { display: grid; gap: 28px; }
+.stage { background: var(--surface); border: 1px solid var(--rule); border-radius: 20px; padding: clamp(32px, 8vw, 96px) 24px; display: grid; place-items: center; gap: 24px; cursor: pointer; }
+.stage svg { width: min(560px, 100%); height: auto; overflow: visible; }
+.stage .hint { font-size: 14px; color: var(--pencil); }
+.lede { font-size: 20px; max-width: 46ch; }
+
+.mark-bottom { transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 28px; display: grid; gap: 14px; min-width: 0; }
+.tile svg { width: 100%; height: auto; }
+.tile h3 { font-size: 16px; }
+.tile .muted { font-size: 14px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.fact { border-left: 3px solid var(--birome); padding-left: 12px; }
+.fact b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+.fact span { font-size: 14px; color: var(--pencil); }
+
+.variants { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.var { border-radius: 14px; padding: 36px 24px; display: grid; place-items: center; min-height: 160px; border: 1px solid var(--rule); }
+.var svg { width: 100%; max-width: 200px; height: auto; }
+.var-light { background: #FFFFFF; } .var-dark { background: #111318; border-color: #2A2E38; }
+.var-birome { background: #2337C6; border-color: #2337C6; } .var-mono { background: var(--surface); color: var(--graphite); }
+.cap { font-size: 14px; color: var(--pencil); margin-top: 8px; }
+
+.icons { display: flex; flex-wrap: wrap; gap: 28px; align-items: end; }
+.icons figure { margin: 0; display: grid; gap: 8px; justify-items: center; }
+.icons figcaption { font-size: 13px; color: var(--pencil); font-variant-numeric: tabular-nums; }
+.phone { width: 240px; max-width: 100%; aspect-ratio: 9 / 16; border-radius: 28px; background: linear-gradient(160deg, #c9d2f5, #f0d9c8); padding: 28px 22px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; align-content: start; }
+.phone .app { display: grid; justify-items: center; gap: 4px; font-size: 10px; color: #1B1E25; }
+.phone .ph { width: 44px; height: 44px; border-radius: 11px; background: rgba(255,255,255,.55); }
+.tab { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px 10px 0 0; padding: 8px 14px; font-size: 13px; width: fit-content; }
+
+.rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.rule-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 20px; display: grid; gap: 12px; }
+.rule-card .demo { display: grid; place-items: center; min-height: 90px; }
+.rule-card .demo svg { width: 150px; height: auto; }
+.no { color: var(--guide); font-weight: 700; font-size: 14px; }
+.files { display: grid; gap: 6px; font-size: 15px; }
+.files code { font-size: 14px; background: var(--birome-soft); padding: 2px 6px; border-radius: 6px; }
+footer { border-top: 1px solid var(--rule); padding-block: 24px 48px; font-size: 14px; color: var(--pencil); }
+
+@media (max-width: 860px) { .grid2, .rules { grid-template-columns: 1fr; } .variants { grid-template-columns: 1fr 1fr; } }
+@media (prefers-reduced-motion: reduce) { .mark-bottom { transition: none; } }
+</style>
+
+<header class="wrap hero"><div class="in">
+  <div class="stage" id="stage" role="button" tabindex="0" aria-label="Logo de IOU. Activá para ver el corte del vale.">
+    <span id="hero-mark"></span>
+    <span class="hint" id="hint">Tocá el logo para cerrar y volver a cortar el vale</span>
+  </div>
+  <h1 style="font-size:clamp(32px,5vw,48px);letter-spacing:-.03em">El vale cortado</h1>
+  <p class="lede muted">Tres letras dibujadas a medida y partidas por la mitad, como un vale después de pagarlo. La mitad de arriba es la deuda; la de abajo, corrida por el corte, es la parte que ya se saldó.</p>
+</div></header>
+
+<main>
+  <section class="wrap"><div class="in">
+    <h2>Construcción</h2>
+    <p class="muted">Las letras no salen de una tipografía: se dibujan sobre una grilla con un solo trazo y una sola regla de corte, así el logo no se parece al de nadie.</p>
+    <div class="grid2">
+      <div class="tile"><span id="construct"></span></div>
+      <div class="tile" style="gap:20px">
+        <div class="facts">
+          <div class="fact"><b>120</b><span>altura de las letras</span></div>
+          <div class="fact"><b>30</b><span>trazo, igual en I, O y U</span></div>
+          <div class="fact"><b>18</b><span>espacio entre letras</span></div>
+          <div class="fact"><b>4</b><span>ancho del corte, en la mitad exacta</span></div>
+          <div class="fact"><b>8</b><span>corrimiento de la mitad inferior</span></div>
+        </div>
+        <p class="muted" style="font-size:15px">La O es un anillo perfecto y la U es esa misma O abierta arriba: lo que estaba cerrado (una deuda) queda abierto. La I es el trazo puro. Las terminaciones son rectas, para que el corte se lea limpio.</p>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="wrap"><div class="in">
+    <h2>Variantes</h2>
+    <div class="variants">
+      <div><div class="var var-light" id="v-light"></div><p class="cap">Principal, sobre claro</p></div>
+      <div><div class="var var-dark" id="v-dark"></div><p class="cap">Sobre oscuro</p></div>
+      <div><div class="var var-birome" id="v-birome"></div><p class="cap">Sobre birome</p></div>
+      <div><div class="var var-mono" id="v-mono"></div><p class="cap">Un color (sellos, PDF, grabados)</p></div>
+    </div>
+  </div></section>
+
+  <section class="wrap"><div class="in">
+    <h2>Ícono de app y favicon</h2>
+    <p class="muted">El ícono lleva el logo completo sobre birome, con la mitad cortada en amarillo resaltador. Debajo de 48 px las tres letras se empastan, así que el favicon usa solo la O cortada.</p>
+    <div class="grid2">
+      <div class="tile">
+        <div class="icons" id="icons"></div>
+        <div class="tab"><span id="tab-fav"></span><span>Bariloche 2026 | IOU</span></div>
+      </div>
+      <div class="tile" style="justify-items:center"><div class="phone" id="phone"></div></div>
+    </div>
+  </div></section>
+
+  <section class="wrap"><div class="in">
+    <h2>Cómo usarlo</h2>
+    <div class="rules">
+      <div class="rule-card"><div class="demo" id="r-space"></div><b>Aire alrededor</b><p class="muted" style="font-size:14px">Dejá libre, como mínimo, el ancho de un trazo (el grosor de la I) en los cuatro lados.</p></div>
+      <div class="rule-card"><div class="demo" id="r-min"></div><b>Tamaño mínimo</b><p class="muted" style="font-size:14px">El logo completo, desde 64 px de ancho. Por debajo, usá la O cortada.</p></div>
+      <div class="rule-card"><div class="demo" id="r-no1"></div><span class="no">No cierres el corte</span><p class="muted" style="font-size:14px">Sin el corte, son solo tres letras. El corte es el logo.</p></div>
+      <div class="rule-card"><div class="demo" id="r-no2"></div><span class="no">No inviertas los colores de las mitades</span><p class="muted" style="font-size:14px">El color de marca va siempre en la mitad de abajo, la que se corrió.</p></div>
+      <div class="rule-card"><div class="demo" id="r-no3"></div><span class="no">No lo deformes ni lo rotes</span><p class="muted" style="font-size:14px">Escalalo siempre proporcional. El corte va horizontal.</p></div>
+      <div class="rule-card"><div class="demo" style="justify-content:start"><div class="files">
+        <span><code>iou-logo.svg</code> principal</span>
+        <span><code>iou-logo-dark.svg</code> sobre oscuro</span>
+        <span><code>iou-logo-mono.svg</code> currentColor</span>
+        <span><code>iou-icon.svg</code> ícono 512</span>
+        <span><code>favicon.svg</code> O cortada</span>
+      </div></div><b>Archivos</b><p class="muted" style="font-size:14px">En <code style="font-size:13px">IOU-client/public/brand/</code>, generados por <code style="font-size:13px">scripts/build-brand.mjs</code>.</p></div>
+    </div>
+  </div></section>
+</main>
+<footer class="wrap"><div class="in">Marca IOU, versión 1. Parte del sistema de diseño D0.</div></footer>
+
+<script>
+(function () {
+  "use strict";
+  const GLYPHS = "M0 0H30V120H0ZM48 60a60 60 0 1 0 120 0a60 60 0 1 0-120 0ZM78 60a30 30 0 1 0 60 0a30 30 0 1 0-60 0ZM186 0H216V66A24 24 0 0 0 264 66V0H294V66A54 54 0 0 1 186 66Z";
+  const RING = (cx, cy, R, r) => `M${cx - R} ${cy}a${R} ${R} 0 1 0 ${2 * R} 0a${R} ${R} 0 1 0 ${-2 * R} 0ZM${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`;
+  let uid = 0;
+  function mark({ top, bottom, cut = true, swap = false, label = "IOU", extra = "" }) {
+    const id = "m" + (++uid);
+    const t = swap ? bottom : top, b = swap ? top : bottom;
+    const body = cut
+      ? `<defs><clipPath id="${id}t"><rect x="-20" y="-20" width="342" height="78"/></clipPath><clipPath id="${id}b"><rect x="-20" y="62" width="342" height="120"/></clipPath></defs>
+         <path clip-path="url(#${id}t)" fill="${t}" fill-rule="evenodd" d="${GLYPHS}"/>
+         <g class="mark-bottom" transform="translate(8 0)"><path clip-path="url(#${id}b)" fill="${b}" fill-rule="evenodd" d="${GLYPHS}"/></g>`
+      : `<path fill="${t}" fill-rule="evenodd" d="${GLYPHS}"/>`;
+    return `<svg viewBox="0 0 302 120" role="img" aria-label="${label}">${body}${extra}</svg>`;
+  }
+  function icon(size, radius = 116) {
+    const id = "i" + (++uid);
+    return `<svg viewBox="0 0 512 512" width="${size}" height="${size}" role="img" aria-label="Ícono de IOU"><rect width="512" height="512" rx="${radius}" fill="#2337C6"/>
+      <g transform="translate(91 190) scale(1.0927)"><defs><clipPath id="${id}t"><rect x="-20" y="-20" width="342" height="78"/></clipPath><clipPath id="${id}b"><rect x="-20" y="62" width="342" height="120"/></clipPath></defs>
+      <path clip-path="url(#${id}t)" fill="#FFFFFF" fill-rule="evenodd" d="${GLYPHS}"/><g transform="translate(8 0)"><path clip-path="url(#${id}b)" fill="#FFE45C" fill-rule="evenodd" d="${GLYPHS}"/></g></g></svg>`;
+  }
+  function favicon(size) {
+    const id = "f" + (++uid), d = RING(62, 64, 40, 19);
+    return `<svg viewBox="0 0 128 128" width="${size}" height="${size}" role="img" aria-label="Favicon de IOU"><defs><clipPath id="${id}t"><rect width="128" height="61"/></clipPath><clipPath id="${id}b"><rect y="67" width="128" height="61"/></clipPath></defs>
+      <rect width="128" height="128" rx="30" fill="#2337C6"/><path clip-path="url(#${id}t)" fill="#FFFFFF" fill-rule="evenodd" d="${d}"/><g transform="translate(6 0)"><path clip-path="url(#${id}b)" fill="#FFE45C" fill-rule="evenodd" d="${d}"/></g></svg>`;
+  }
+  const $ = (s) => document.querySelector(s);
+
+  // Hero: la mitad inferior se corre al cargar (un solo momento de animación)
+  $("#hero-mark").innerHTML = mark({ top: "var(--mark-top)", bottom: "var(--mark-bottom)" }).replace("<svg ", '<svg style="width:min(560px,100%)" ');
+  const stage = $("#stage");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Cerrado = mitad inferior sin correr y sin corte visible
+  const bottomG = stage.querySelector(".mark-bottom"), bottomP = bottomG.querySelector("path");
+  const clipB = bottomP.getAttribute("clip-path");
+  function close() { bottomG.style.transition = "none"; bottomG.setAttribute("transform", "translate(0 0)"); bottomP.setAttribute("clip-path", clipB.replace("b)", "t)")); bottomP.style.opacity = "0"; stage.querySelector("path").removeAttribute("clip-path"); }
+  function cut() {
+    const topP = stage.querySelector("path"); topP.setAttribute("clip-path", clipB.replace("b)", "t)"));
+    bottomP.setAttribute("clip-path", clipB); bottomP.style.opacity = "1";
+    if (reduce) { bottomG.setAttribute("transform", "translate(8 0)"); return; }
+    let t0 = null;
+    const step = (ts) => { t0 = t0 || ts; const k = Math.min(1, (ts - t0) / 450), e = 1 - Math.pow(1 - k, 3); bottomG.setAttribute("transform", `translate(${(8 * e).toFixed(2)} 0)`); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  let isCut = true;
+  close(); setTimeout(cut, 450);
+  const toggle = () => { if (isCut) { close(); } else { cut(); } isCut = !isCut; };
+  stage.addEventListener("click", toggle);
+  stage.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+
+  // Construcción con guías
+  const g = "var(--guide)";
+  const guides = `<g fill="none" stroke="${g}" stroke-width="0.8" stroke-dasharray="3 3" opacity=".9">
+      <line x1="-14" y1="0" x2="316" y2="0"/><line x1="-14" y1="120" x2="316" y2="120"/><line x1="-14" y1="60" x2="316" y2="60"/>
+      <circle cx="108" cy="60" r="60"/><circle cx="108" cy="60" r="30"/><circle cx="248" cy="66" r="54"/>
+    </g>
+    <g fill="${g}" font-family="Schibsted Grotesk, sans-serif" font-size="9" font-weight="600">
+      <text x="-14" y="-6">120</text><text x="2" y="138">30</text><text x="31" y="138">18</text><text x="292" y="56">corte</text>
+    </g>`;
+  $("#construct").innerHTML = mark({ top: "var(--mark-top)", bottom: "var(--mark-bottom)", extra: guides }).replace('viewBox="0 0 302 120"', 'viewBox="-20 -16 346 162" style="overflow:visible"');
+
+  // Variantes
+  $("#v-light").innerHTML = mark({ top: "#1B1E25", bottom: "#2337C6" });
+  $("#v-dark").innerHTML = mark({ top: "#E8EAF0", bottom: "#8B9BFF" });
+  $("#v-birome").innerHTML = mark({ top: "#FFFFFF", bottom: "#FFE45C" });
+  $("#v-mono").innerHTML = mark({ top: "currentColor", bottom: "currentColor" });
+
+  // Íconos
+  $("#icons").innerHTML = [[180, "180 px, iOS"], [96, "96 px"], [48, "48 px"]].map(([s, l]) => `<figure>${icon(s, s > 100 ? 116 : 110)}<figcaption>${l}</figcaption></figure>`).join("")
+    + [[64, "favicon 64 px"], [32, "32 px"], [16, "16 px"]].map(([s, l]) => `<figure>${favicon(s)}<figcaption>${l}</figcaption></figure>`).join("");
+  $("#tab-fav").innerHTML = favicon(16);
+  const apps = ["Fotos", "Mapas", "Banco", "Clima", "Notas", "IOU", "Música", "Reloj"];
+  $("#phone").innerHTML = apps.map(a => `<div class="app">${a === "IOU" ? icon(44, 116) : '<span class="ph"></span>'}<span>${a}</span></div>`).join("");
+
+  // Reglas
+  $("#r-space").innerHTML = mark({ top: "var(--mark-top)", bottom: "var(--mark-bottom)", extra: `<rect x="-30" y="-30" width="362" height="180" fill="none" stroke="${g}" stroke-dasharray="4 4"/>` }).replace('viewBox="0 0 302 120"', 'viewBox="-34 -34 370 188"');
+  $("#r-min").innerHTML = `<div style="display:flex;gap:18px;align-items:center"><span style="width:64px;display:block">${mark({ top: "var(--mark-top)", bottom: "var(--mark-bottom)" })}</span>${favicon(24)}</div>`;
+  $("#r-no1").innerHTML = mark({ top: "var(--mark-top)", bottom: "var(--mark-bottom)", cut: false });
+  $("#r-no2").innerHTML = mark({ top: "var(--mark-top)", bottom: "var(--mark-bottom)", swap: true });
+  $("#r-no3").innerHTML = mark({ top: "var(--mark-top)", bottom: "var(--mark-bottom)" }).replace("<svg ", '<svg style="transform:rotate(-8deg) scaleX(1.25)" ');
+})();
+</script>

@@ -1,0 +1,631 @@
+<title>Prototipo IOU</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: libreta de cuentas silenciosa; el único protagonista es el vale troquelado. */
+:root {
+  --paper: #F6F7F9; --surface: #FFFFFF; --graphite: #1B1E25; --pencil: #5F6573; --rule: #E2E5EB;
+  --birome: #2337C6; --birome-soft: #E8EBFB; --on-birome: #FFFFFF;
+  --te-deben: #0E7A55; --te-deben-soft: #E3F4EC; --debes: #C2303B; --debes-soft: #FBE7E8;
+  --resaltador: #FFE45C; --skeleton: #E7EAF0; --overlay: rgba(20, 23, 31, .45);
+  --av1: #E4D8F3; --av2: #D6E8F5; --av3: #F5E1CF; --av4: #D9EEDC; --av5: #F3D6DF; --av6: #E2E4D3; --av-ink: #2A2D36;
+  --font-ui: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-firma: "Caveat", "Segoe Print", cursive;
+  --r-dialog: 20px; --r-card: 14px; --r-ctrl: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #111318; --surface: #191C23; --graphite: #E8EAF0; --pencil: #A3A9B6; --rule: #2A2E38;
+  --birome: #8B9BFF; --birome-soft: #1E2447; --on-birome: #0E1330;
+  --te-deben: #4FD1A1; --te-deben-soft: #12302A; --debes: #FF7A84; --debes-soft: #3A1A1F;
+  --skeleton: #252933; --overlay: rgba(0, 0, 0, .6);
+  --av1: #3B3250; --av2: #263B4C; --av3: #4A3626; --av4: #27402D; --av5: #4A2834; --av6: #3B3D2A; --av-ink: #E8EAF0;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #111318; --surface: #191C23; --graphite: #E8EAF0; --pencil: #A3A9B6; --rule: #2A2E38;
+  --birome: #8B9BFF; --birome-soft: #1E2447; --on-birome: #0E1330;
+  --te-deben: #4FD1A1; --te-deben-soft: #12302A; --debes: #FF7A84; --debes-soft: #3A1A1F;
+  --skeleton: #252933; --overlay: rgba(0, 0, 0, .6);
+  --av1: #3B3250; --av2: #263B4C; --av3: #4A3626; --av4: #27402D; --av5: #4A2834; --av6: #3B3D2A; --av-ink: #E8EAF0;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--graphite); font-family: var(--font-ui); font-size: 16px; line-height: 1.5; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--birome); }
+.num { font-variant-numeric: tabular-nums; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+:focus-visible { outline: 2px solid var(--birome); outline-offset: 2px; border-radius: 6px; }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Barra del prototipo (no es parte del producto) */
+.proto { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: var(--graphite); color: var(--paper); font-size: 13px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 31; background: var(--graphite); }
+.proto-in { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding-block: 8px; }
+.proto b { font-weight: 700; }
+.proto .grp { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.proto button { background: transparent; border: 1px solid color-mix(in srgb, var(--paper) 30%, transparent); color: var(--paper); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.proto button[aria-pressed="true"] { background: var(--paper); color: var(--graphite); }
+
+/* Botones e inputs */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: var(--r-ctrl); border: 1px solid var(--rule); background: var(--surface); font-weight: 600; cursor: pointer; text-decoration: none; color: var(--graphite); }
+.btn-primary { background: var(--birome); border-color: var(--birome); color: var(--on-birome); }
+.btn-ghost { background: transparent; border-color: transparent; color: var(--birome); }
+.btn-danger { background: var(--debes); border-color: var(--debes); color: var(--surface); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn svg { width: 20px; height: 20px; }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 14px; font-weight: 600; }
+.input { min-height: 44px; border: 1px solid var(--rule); border-radius: var(--r-ctrl); background: var(--surface); padding: 0 12px; width: 100%; }
+.input:focus { outline: 2px solid var(--birome); outline-offset: 0; border-color: transparent; }
+.help { font-size: 14px; color: var(--pencil); }
+.err { font-size: 14px; color: var(--debes); }
+
+/* Vale */
+.vale { display: flex; align-items: stretch; filter: drop-shadow(0 1px 0 var(--rule)); }
+.vale-body, .vale-stub { background: var(--surface); }
+.vale-body { flex: 1; min-width: 0; padding: 14px 16px 14px 22px; display: grid; gap: 2px;
+  -webkit-mask: radial-gradient(circle at 0 50%, transparent 8px, #000 8.5px); mask: radial-gradient(circle at 0 50%, transparent 8px, #000 8.5px); }
+.vale-stub { width: 116px; flex: none; padding: 14px 20px 14px 14px; border-left: 2px dashed var(--rule); display: grid; align-content: center; justify-items: end;
+  -webkit-mask: radial-gradient(circle at 100% 50%, transparent 8px, #000 8.5px); mask: radial-gradient(circle at 100% 50%, transparent 8px, #000 8.5px); }
+.vale-who { font-weight: 600; }
+.vale-meta { font-size: 13px; color: var(--pencil); }
+.vale-amt { font-weight: 800; font-size: 20px; }
+.vale-firma { font-family: var(--font-firma); font-size: 22px; line-height: 1; color: var(--birome); }
+.vale.tearing .vale-body { animation: tearL .4s ease-out forwards; }
+.vale.tearing .vale-stub { animation: tearR .4s ease-out forwards; }
+@keyframes tearL { to { transform: translateX(-8px) rotate(-3deg); opacity: 0; } }
+@keyframes tearR { to { transform: translateX(10px) rotate(4deg); opacity: 0; } }
+.vale.drop { animation: drop .5s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes drop { from { transform: translateY(-14px) rotate(-1.5deg); opacity: 0; } }
+
+/* Avatares y montos */
+.av { width: 36px; height: 36px; border-radius: 50%; display: inline-grid; place-items: center; font-weight: 700; font-size: 14px; color: var(--av-ink); flex: none; }
+.av-sm { width: 28px; height: 28px; font-size: 12px; }
+.avs { display: flex; } .avs .av { border: 2px solid var(--surface); margin-left: -8px; } .avs .av:first-child { margin-left: 0; }
+.pos { color: var(--te-deben); } .neg { color: var(--debes); }
+
+/* Skeleton */
+.sk { background: var(--skeleton); border-radius: 6px; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .55; } }
+.coldstart { display: grid; gap: 8px; padding: 14px 16px; border-radius: var(--r-card); background: var(--birome-soft); }
+.bar { height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--birome) 20%, transparent); overflow: hidden; }
+.bar::after { content: ""; display: block; height: 100%; width: 35%; background: var(--birome); border-radius: 2px; animation: indet 1.3s ease-in-out infinite; }
+@keyframes indet { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+
+/* ===== Landing ===== */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 16px; max-width: 1180px; margin: 0 auto; }
+.logo { font-weight: 800; font-size: 22px; letter-spacing: -.02em; text-decoration: none; color: var(--graphite); display: inline-flex; align-items: baseline; gap: 2px; }
+.logo svg { height: 24px; width: auto; display: block; }
+.hero { max-width: 1180px; margin: 0 auto; display: grid; gap: 40px; grid-template-columns: 1.05fr .95fr; align-items: center; padding-block: 40px 72px; }
+.hero h1 { font-size: clamp(40px, 6vw, 60px); line-height: 1.04; letter-spacing: -.03em; font-weight: 800; }
+.hero p { font-size: 19px; color: var(--pencil); max-width: 34ch; margin: 18px 0 28px; }
+.hero-ctas { display: flex; gap: 10px; flex-wrap: wrap; }
+.demo { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-dialog); padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.demo-ctrls { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; }
+.stepper { display: flex; align-items: center; border: 1px solid var(--rule); border-radius: var(--r-ctrl); min-height: 44px; }
+.stepper button { width: 44px; height: 44px; border: 0; background: transparent; cursor: pointer; font-size: 20px; }
+.stepper output { min-width: 28px; text-align: center; font-weight: 700; }
+.demo-sum { font-size: 14px; color: var(--pencil); }
+.vales { display: grid; gap: 10px; }
+.band { border-top: 1px solid var(--rule); }
+.band-in { max-width: 1180px; margin: 0 auto; padding-block: 64px; }
+.band h2 { font-size: 32px; letter-spacing: -.02em; max-width: 22ch; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 36px; counter-reset: s; }
+.step { display: grid; gap: 8px; align-content: start; }
+.step-n { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--birome); color: var(--birome); display: grid; place-items: center; font-weight: 800; }
+.step h3 { font-size: 19px; } .step p { margin: 0; color: var(--pencil); }
+.caso { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+.caso-big { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+.caso-big strong { font-size: 64px; line-height: 1; font-weight: 800; letter-spacing: -.03em; }
+.caso-big .arrow { font-size: 32px; color: var(--pencil); }
+.caso-big small { display: block; font-size: 15px; color: var(--pencil); font-weight: 500; }
+.ben { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 28px; }
+.ben h3 { font-size: 18px; margin-bottom: 6px; } .ben p { margin: 0; color: var(--pencil); }
+.cta-final { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.foot { font-size: 14px; color: var(--pencil); max-width: 1180px; margin: 0 auto; padding-block: 24px 40px; }
+
+/* ===== Auth ===== */
+.auth { min-height: 70vh; display: grid; place-items: center; padding-block: 48px; }
+.auth-card { width: 100%; max-width: 400px; display: grid; gap: 18px; }
+.auth-card h1 { font-size: 32px; letter-spacing: -.02em; }
+
+/* ===== App ===== */
+.app { display: grid; grid-template-columns: 240px minmax(0, 1fr) 340px; min-height: calc(100vh - 40px); }
+.side { border-right: 1px solid var(--rule); padding: 20px 16px; display: grid; align-content: start; gap: 20px; position: sticky; top: 40px; height: calc(100vh - 40px); }
+.side nav { display: grid; gap: 2px; }
+.side .navlink { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-ctrl); text-decoration: none; color: var(--graphite); font-weight: 500; border: 0; background: none; cursor: pointer; text-align: left; width: 100%; }
+.side .navlink[aria-current="page"] { background: var(--birome-soft); color: var(--birome); font-weight: 700; }
+.side small { color: var(--pencil); font-size: 13px; font-weight: 600; padding-left: 10px; }
+.main { padding: 28px 32px 96px; min-width: 0; }
+.main-in { max-width: 720px; margin: 0 auto; display: grid; gap: 24px; }
+.head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.head h1 { font-size: 32px; letter-spacing: -.02em; }
+.panel { border-left: 1px solid var(--rule); padding: 28px 24px; display: grid; align-content: start; gap: 18px; position: sticky; top: 40px; height: calc(100vh - 40px); overflow: auto; }
+.panel h2 { font-size: 18px; }
+.mine { display: grid; gap: 2px; }
+.mine .lbl { font-weight: 600; }
+.mine .amt { font-size: 40px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-card); padding: 18px; display: grid; gap: 14px; text-align: left; cursor: pointer; }
+.card:hover { border-color: color-mix(in srgb, var(--birome) 40%, var(--rule)); }
+.card h3 { font-size: 18px; }
+.card .row { display: flex; justify-content: space-between; align-items: end; gap: 8px; }
+.card .bal { text-align: right; } .card .bal b { display: block; font-size: 22px; font-weight: 800; } .card .bal span { font-size: 13px; color: var(--pencil); }
+.saldado { background: linear-gradient(transparent 55%, var(--resaltador) 55%, var(--resaltador) 90%, transparent 90%); color: var(--graphite); padding: 0 2px; }
+
+.tabs { display: flex; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; width: fit-content; max-width: 100%; overflow-x: auto; }
+.tabs button { border: 0; background: transparent; padding: 8px 14px; border-radius: 9px; cursor: pointer; font-weight: 600; color: var(--pencil); min-height: 40px; white-space: nowrap; }
+.tabs button[aria-selected="true"] { background: var(--birome-soft); color: var(--birome); }
+
+.day { font-size: 14px; font-weight: 600; color: var(--pencil); margin: 6px 0 2px; }
+.list { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-card); }
+.item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--rule); }
+.item:first-child { border-top: 0; }
+.item .t { flex: 1; min-width: 0; } .item .t b { font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .t span { font-size: 14px; color: var(--pencil); }
+.item .a { text-align: right; } .item .a b { display: block; font-weight: 700; } .item .a span { font-size: 13px; }
+.ico { width: 36px; height: 36px; border-radius: 10px; background: var(--birome-soft); color: var(--birome); display: grid; place-items: center; flex: none; }
+.ico svg { width: 18px; height: 18px; }
+
+.bars { display: grid; gap: 12px; }
+.brow { display: grid; grid-template-columns: 90px 1fr 110px; align-items: center; gap: 12px; }
+.btrack { position: relative; height: 12px; }
+.btrack::before { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 1px; background: var(--rule); }
+.bfill { position: absolute; top: 0; height: 12px; border-radius: 3px; transition: all .3s; }
+
+.empty { display: grid; justify-items: start; gap: 14px; padding: 28px; background: var(--surface); border: 1px dashed var(--rule); border-radius: var(--r-card); }
+.empty p { margin: 0; max-width: 40ch; color: var(--pencil); }
+.errbox { display: grid; gap: 10px; justify-items: start; padding: 20px; border-radius: var(--r-card); background: var(--debes-soft); }
+.errbox b { color: var(--debes); }
+
+.fab { display: none; }
+.mtabs { display: none; }
+
+/* Hoja / diálogo de gasto */
+.scrim { position: fixed; inset: 0; background: var(--overlay); z-index: 40; display: grid; place-items: center; padding: 16px; }
+.sheet { background: var(--surface); border-radius: var(--r-dialog); width: 100%; max-width: 520px; max-height: min(88vh, 860px); overflow: auto; padding: 22px; display: grid; gap: 18px; animation: up .2s ease-out; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
+@keyframes up { from { transform: translateY(16px); opacity: 0; } }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; }
+.sheet-head h2 { font-size: 22px; }
+.iconbtn { width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; }
+.iconbtn svg { width: 22px; height: 22px; }
+.amount-in { font-size: 40px; font-weight: 800; border: 0; border-bottom: 2px solid var(--rule); border-radius: 0; padding: 4px 0; background: transparent; width: 100%; letter-spacing: -.02em; }
+.amount-in:focus { outline: none; border-bottom-color: var(--birome); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--rule); background: var(--surface); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 14px; min-height: 36px; }
+.chip[aria-pressed="true"] { background: var(--birome-soft); border-color: var(--birome); color: var(--birome); }
+.payers { display: flex; gap: 8px; flex-wrap: wrap; }
+.payer { display: grid; justify-items: center; gap: 4px; border: 2px solid transparent; border-radius: 12px; padding: 6px 8px; background: none; cursor: pointer; font-size: 13px; min-width: 60px; }
+.payer[aria-pressed="true"] { border-color: var(--birome); background: var(--birome-soft); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--paper); border-radius: 12px; }
+.seg button { border: 0; background: transparent; padding: 8px; border-radius: 9px; cursor: pointer; font-weight: 600; min-height: 40px; color: var(--pencil); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--graphite); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.parts { display: grid; gap: 4px; }
+.part { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; min-height: 48px; }
+.part .small-in { width: 120px; min-height: 40px; text-align: right; }
+.part input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--birome); }
+.sumbar { display: grid; gap: 6px; }
+.sumbar .track { height: 6px; background: var(--paper); border-radius: 3px; overflow: hidden; }
+.sumbar .fill { height: 100%; transition: width .2s, background .2s; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--graphite); color: var(--paper); padding: 12px 16px; border-radius: 12px; display: flex; gap: 16px; align-items: center; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,.2); max-width: calc(100% - 32px); }
+.toast button { background: none; border: 0; color: var(--resaltador); font-weight: 700; cursor: pointer; }
+
+@media (max-width: 1100px) { .app { grid-template-columns: 220px minmax(0, 1fr); } .panel { display: none; } .mtabs { display: grid; gap: 12px; } }
+@media (max-width: 860px) {
+  .hero, .caso { grid-template-columns: 1fr; padding-block: 24px 48px; }
+  .steps, .ben { grid-template-columns: 1fr; gap: 24px; }
+  .app { grid-template-columns: 1fr; }
+  .side { display: none; }
+  .main { padding: 20px 16px 110px; }
+  .fab { display: inline-flex; position: fixed; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 20; box-shadow: 0 8px 24px rgba(35,55,198,.35); border-radius: 999px; padding: 0 22px; min-height: 52px; }
+  .head .btn-primary.add { display: none; }
+  .scrim { place-items: end center; padding: 0; }
+  .sheet { border-radius: var(--r-dialog) var(--r-dialog) 0 0; max-width: none; max-height: 92vh; padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
+  .brow { grid-template-columns: 70px 1fr 96px; }
+  .band-in { padding-block: 48px; }
+  .caso-big strong { font-size: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .1s !important; animation-iteration-count: 1 !important; transition-duration: .1s !important; }
+  .sk { animation: none; }
+}
+</style>
+
+<div class="proto" role="region" aria-label="Controles del prototipo">
+  <div class="wrap proto-in">
+    <b>Prototipo D0</b>
+    <div class="grp" aria-label="Pantalla">
+      <button data-go="landing">Landing</button><button data-go="ingresar">Ingresar</button><button data-go="grupos">Mis grupos</button><button data-go="grupo">Grupo</button>
+    </div>
+    <div class="grp" aria-label="Estado de los datos">
+      <span>Estado:</span>
+      <button data-state="ok" aria-pressed="true">Con datos</button><button data-state="loading">Cargando</button><button data-state="cold">Cold start</button><button data-state="empty">Vacío</button><button data-state="error">Error</button>
+    </div>
+    <div class="grp" aria-label="Tema">
+      <span>Tema:</span>
+      <button data-theme-set="system" aria-pressed="true">Sistema</button><button data-theme-set="light">Claro</button><button data-theme-set="dark">Oscuro</button>
+    </div>
+  </div>
+</div>
+
+<div id="view"></div>
+<div id="modal"></div>
+<div id="toast" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+  // ---------- Íconos (lucide, trazo 1.75) ----------
+  const I = {
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    x: '<path d="M18 6 6 18M6 6l12 12"/>',
+    receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8M12 17.5v-11"/>',
+    fuel: '<path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2 2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/>',
+    cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+    home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+    mountain: '<path d="m8 3 4 8 5-5 5 15H2L8 3z"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+    arrowR: '<path d="M5 12h14M12 5l7 7-7 7"/>',
+    wifiOff: '<path d="M12 20h.01M8.5 16.43a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 4.17-2.65M10.66 5c4.01-.36 8.14.9 11.34 3.76M16.85 11.25a10 10 0 0 1 2.22 1.68M5 13a10 10 0 0 1 5.24-2.76M2 2l20 20"/>'
+  };
+  // Logo: el vale cortado (ver marca-iou.html)
+  const GLY = "M0 0H30V120H0ZM48 60a60 60 0 1 0 120 0a60 60 0 1 0-120 0ZM78 60a30 30 0 1 0 60 0a30 30 0 1 0-60 0ZM186 0H216V66A24 24 0 0 0 264 66V0H294V66A54 54 0 0 1 186 66Z";
+  const LOGO = `<svg viewBox="0 0 302 120" aria-hidden="true"><defs><clipPath id="lg-t"><rect x="-20" y="-20" width="342" height="78"/></clipPath><clipPath id="lg-b"><rect x="-20" y="62" width="342" height="120"/></clipPath></defs><path clip-path="url(#lg-t)" fill="var(--graphite)" fill-rule="evenodd" d="${GLY}"/><g transform="translate(8 0)"><path clip-path="url(#lg-b)" fill="var(--birome)" fill-rule="evenodd" d="${GLY}"/></g></svg><span class="sr">IOU</span>`;
+  const icon = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
+
+  // ---------- Dinero: todo en centavos ----------
+  const fmt = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const money = (c) => fmt.format(c / 100).replace(/ /g, " ");
+  const toCents = (s) => { const n = Number(String(s).replace(/\./g, "").replace(",", ".")); return Number.isFinite(n) ? Math.round(n * 100) : 0; };
+  // Spec 4.2: base = floor(monto/n); los centavos sobrantes van de a 1 a los primeros por id
+  function splitEqual(total, ids) {
+    const sorted = [...ids].sort((a, b) => a - b), n = sorted.length; if (!n) return {};
+    const base = Math.floor(total / n); let rest = total - base * n; const out = {};
+    for (const id of sorted) { out[id] = base + (rest > 0 ? 1 : 0); if (rest > 0) rest--; }
+    return out;
+  }
+  function splitPct(total, pcts) { // pcts: {id: porcentaje}
+    const ids = Object.keys(pcts).map(Number).sort((a, b) => a - b), out = {}; let acc = 0;
+    for (const id of ids) { out[id] = Math.floor(total * pcts[id] / 100); acc += out[id]; }
+    let rest = total - acc; for (const id of ids) { if (rest <= 0) break; out[id]++; rest--; }
+    return out;
+  }
+  // Spec 4.4: greedy mayor deudor ↔ mayor acreedor
+  function settle(bal) {
+    const d = [], c = [];
+    for (const [id, v] of Object.entries(bal)) { if (v < 0) d.push([+id, -v]); else if (v > 0) c.push([+id, v]); }
+    const res = [];
+    while (d.length && c.length) {
+      d.sort((a, b) => b[1] - a[1]); c.sort((a, b) => b[1] - a[1]);
+      const m = Math.min(d[0][1], c[0][1]); res.push({ de: d[0][0], a: c[0][0], monto: m });
+      d[0][1] -= m; c[0][1] -= m; if (!d[0][1]) d.shift(); if (!c[0][1]) c.shift();
+    }
+    return res;
+  }
+
+  // ---------- Datos de ejemplo ----------
+  const people = { 1: "Vos", 2: "Sofi", 3: "Tomi", 4: "Juli" };
+  const ME = 1;
+  const avColor = (id) => `var(--av${((id - 1) % 6) + 1})`;
+  const initials = (id) => people[id] === "Vos" ? "Vo" : people[id].slice(0, 2);
+  const av = (id, sm) => `<span class="av${sm ? " av-sm" : ""}" style="background:${avColor(id)}" aria-hidden="true">${initials(id)}</span>`;
+  const db = {
+    gastos: [
+      { id: 6, desc: "Excursión al Cerro Catedral", ico: "mountain", total: 9600000, pago: 1, fecha: "Hoy", modo: "MONTOS", parts: { 1: 2400000, 2: 2400000, 3: 2400000, 4: 2400000 } },
+      { id: 5, desc: "Nafta ida", ico: "fuel", total: 4000000, pago: 1, fecha: "Hoy", modo: "IGUAL", ids: [1, 2, 3, 4] },
+      { id: 4, desc: "Cena en el centro", ico: "food", total: 3600000, pago: 3, fecha: "Ayer", modo: "IGUAL", ids: [1, 2, 3, 4] },
+      { id: 3, desc: "Supermercado", ico: "cart", total: 2830050, pago: 4, fecha: "Ayer", modo: "IGUAL", ids: [1, 2, 3, 4] },
+      { id: 2, desc: "Cabaña, 4 noches", ico: "home", total: 18000000, pago: 2, fecha: "Lunes 16", modo: "PORCENTAJE", pct: { 1: 25, 2: 25, 3: 25, 4: 25 } }
+    ],
+    pagos: [{ de: 3, a: 2, monto: 2000000, fecha: "Ayer" }]
+  };
+  function partsOf(g) { return g.modo === "IGUAL" ? splitEqual(g.total, g.ids) : g.modo === "PORCENTAJE" ? splitPct(g.total, g.pct) : g.parts; }
+  function balances() {
+    const b = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    for (const g of db.gastos) { b[g.pago] += g.total; const p = partsOf(g); for (const id in p) b[id] -= p[id]; }
+    for (const p of db.pagos) { b[p.de] += p.monto; b[p.a] -= p.monto; }
+    return b;
+  }
+
+  // ---------- Estado del prototipo ----------
+  let route = "landing", dataState = "ok", tab = "gastos";
+  const ROUTES = ["landing", "ingresar", "registrarme", "grupos", "grupo"];
+  const $ = (s, r = document) => r.querySelector(s);
+  const view = $("#view");
+
+  function setPressed(attr, val) { document.querySelectorAll(`[${attr}]`).forEach(b => b.setAttribute("aria-pressed", String(b.getAttribute(attr) === val))); }
+  document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => { location.hash = b.dataset.go; }));
+  document.querySelectorAll("[data-state]").forEach(b => b.addEventListener("click", () => { dataState = b.dataset.state; setPressed("data-state", dataState); render(); }));
+  document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("click", () => {
+    const t = b.dataset.themeSet; if (t === "system") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
+    setPressed("data-theme-set", t);
+  }));
+  window.addEventListener("hashchange", () => { route = ROUTES.includes(location.hash.slice(1)) ? location.hash.slice(1) : "landing"; render(true); });
+
+  function render(focus) {
+    ({ landing: renderLanding, ingresar: () => renderAuth("ingresar"), registrarme: () => renderAuth("registrarme"), grupos: renderGrupos, grupo: renderGrupo })[route]();
+    if (focus) { window.scrollTo(0, 0); const h = view.querySelector("h1"); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } }
+  }
+
+  // ---------- Vales ----------
+  function valeHTML(de, a, monto, opts = {}) {
+    const deN = de === ME ? "Vos" : people[de], aN = a === ME ? "vos" : people[a];
+    const verbo = de === ME ? "le debés a" : "le debe a";
+    return `<div class="vale${opts.drop ? " drop" : ""}" ${opts.delay != null ? `style="animation-delay:${opts.delay}ms"` : ""} data-de="${de}" data-a="${a}" data-monto="${monto}">
+      <div class="vale-body"><span class="vale-who">${deN} ${verbo} ${aN}</span><span class="vale-meta">${opts.meta || "Bariloche 2026"}</span>${opts.firma ? `<span class="vale-firma">${deN === "Vos" ? "vos" : deN}</span>` : ""}</div>
+      <div class="vale-stub"><span class="vale-amt num">${money(monto)}</span>${opts.action ? `<button class="btn btn-ghost" style="min-height:32px;padding:0;font-size:14px" data-saldar>Saldar</button>` : ""}</div>
+    </div>`;
+  }
+
+  // ---------- Landing ----------
+  let demo = { monto: 3600000, n: 4 };
+  function renderLanding() {
+    view.innerHTML = `
+    <header class="wrap"><div class="top">
+      <a class="logo" href="#landing" aria-label="IOU, inicio">${LOGO}</a>
+      <nav style="display:flex;gap:6px"><a class="btn btn-ghost" href="#ingresar">Ingresar</a><a class="btn btn-primary" href="#registrarme">Crear cuenta</a></nav>
+    </div></header>
+    <main>
+      <section class="wrap"><div class="hero">
+        <div>
+          <h1>Cuentas claras entre amigos.</h1>
+          <p>Anotá quién pagó qué en el viaje, el depto o el asado. IOU te dice quién le debe a quién, con la menor cantidad de transferencias.</p>
+          <div class="hero-ctas"><a class="btn btn-primary" href="#registrarme">Crear un grupo gratis</a><a class="btn" href="#grupo">Ver un grupo de ejemplo</a></div>
+        </div>
+        <div class="demo" aria-label="Probá cómo se reparte un gasto">
+          <div class="demo-ctrls">
+            <div class="field"><label for="d-monto">Sofi pagó la cena</label><input id="d-monto" class="input num" inputmode="decimal" value="${(demo.monto / 100).toLocaleString("es-AR")}"></div>
+            <div class="field"><span style="font-size:14px;font-weight:600" id="d-n-l">Personas</span>
+              <div class="stepper" role="group" aria-labelledby="d-n-l"><button id="d-menos" aria-label="Una persona menos">−</button><output id="d-n" class="num" aria-live="polite">${demo.n}</output><button id="d-mas" aria-label="Una persona más">+</button></div></div>
+          </div>
+          <div class="demo-sum num" id="d-sum"></div>
+          <div class="vales" id="d-vales"></div>
+        </div>
+      </div></section>
+
+      <section class="band"><div class="wrap"><div class="band-in">
+        <h2>Así funciona</h2>
+        <div class="steps">
+          <div class="step"><span class="step-n">1</span><h3>Armá el grupo</h3><p>Creá un grupo para el viaje y sumá a tus amigos con su email.</p></div>
+          <div class="step"><span class="step-n">2</span><h3>Anotá cada gasto</h3><p>Quien paga lo carga en segundos: en partes iguales, por montos o por porcentaje.</p></div>
+          <div class="step"><span class="step-n">3</span><h3>Salden con pocas transferencias</h3><p>IOU calcula los saldos y te dice exactamente quién le transfiere a quién.</p></div>
+        </div>
+      </div></div></section>
+
+      <section class="band"><div class="wrap"><div class="band-in caso">
+        <div>
+          <h2>Una semana en Bariloche, cuatro amigos</h2>
+          <div class="caso-big"><div><strong class="num">23</strong><small>gastos anotados</small></div><span class="arrow" aria-hidden="true">${icon("arrowR")}</span><div><strong class="num">3</strong><small>transferencias para quedar a mano</small></div></div>
+          <p class="help" style="margin-top:16px;max-width:40ch">Sin planillas ni capturas del grupo de WhatsApp: cada uno ve en todo momento cuánto puso y cuánto le toca.</p>
+        </div>
+        <div class="vales">${valeHTML(3, 2, 4120000, { meta: "Transferencia sugerida" })}${valeHTML(4, 2, 2875000, { meta: "Transferencia sugerida" })}${valeHTML(4, 1, 905000, { meta: "Transferencia sugerida" })}</div>
+      </div></div></section>
+
+      <section class="band"><div class="wrap"><div class="band-in">
+        <h2>Pensado para cómo gastan de verdad</h2>
+        <div class="ben">
+          <div><h3>Cualquier forma de dividir</h3><p>Partes iguales para la nafta, montos exactos para la cena, 60/40 para el alquiler.</p></div>
+          <div><h3>Centavos que cierran</h3><p>Cuando un monto no se divide justo, el redondeo se reparte y la suma siempre da el total.</p></div>
+          <div><h3>Desde el celu, en el momento</h3><p>Anotás el gasto mientras pagás. Lo ven todos al instante.</p></div>
+        </div>
+      </div></div></section>
+
+      <section class="band"><div class="wrap"><div class="band-in cta-final">
+        <h2>El próximo viaje, con las cuentas claras desde el día uno.</h2>
+        <a class="btn btn-primary" href="#registrarme">Crear un grupo gratis</a>
+      </div></div></section>
+    </main>
+    <footer class="wrap"><div class="foot">IOU es un proyecto académico. Los pagos se registran en la app; el dinero se transfiere por fuera.</div></footer>`;
+    const upd = (anim) => {
+      const ids = Array.from({ length: demo.n }, (_, i) => i + 1);
+      const parts = splitEqual(demo.monto, ids);
+      const names = ["Sofi", "Tomi", "Juli", "Vos", "Lu", "Fran", "Maite", "Rami"];
+      $("#d-sum").textContent = `${money(demo.monto)} entre ${demo.n}: ${money(parts[ids[ids.length - 1]] || 0)} cada uno`;
+      $("#d-vales").innerHTML = ids.slice(1).map((id, i) => {
+        const n = names[id - 1];
+        return `<div class="vale${anim ? " drop" : ""}" style="animation-delay:${i * 90}ms"><div class="vale-body"><span class="vale-who">${n} le debe a Sofi</span><span class="vale-firma">${n.toLowerCase()}</span></div><div class="vale-stub"><span class="vale-amt num">${money(parts[id])}</span></div></div>`;
+      }).join("") || `<p class="help">Con una sola persona no hay nada que dividir.</p>`;
+    };
+    upd(true);
+    $("#d-monto").addEventListener("input", (e) => { demo.monto = Math.max(0, toCents(e.target.value)); upd(false); });
+    $("#d-menos").addEventListener("click", () => { demo.n = Math.max(1, demo.n - 1); $("#d-n").textContent = demo.n; upd(false); });
+    $("#d-mas").addEventListener("click", () => { demo.n = Math.min(8, demo.n + 1); $("#d-n").textContent = demo.n; upd(false); });
+  }
+
+  // ---------- Auth ----------
+  function renderAuth(kind) {
+    const reg = kind === "registrarme";
+    view.innerHTML = `
+    <header class="wrap"><div class="top"><a class="logo" href="#landing" aria-label="IOU, inicio">${LOGO}</a></div></header>
+    <main class="wrap auth"><form class="auth-card" id="authf" novalidate>
+      <h1>${reg ? "Creá tu cuenta" : "Ingresá a IOU"}</h1>
+      ${reg ? `<div class="field"><label for="a-n">Nombre</label><input id="a-n" class="input" autocomplete="name" value="Sofía"></div>` : ""}
+      <div class="field"><label for="a-e">Email</label><input id="a-e" class="input" type="email" autocomplete="email" value="sofi@ejemplo.com"></div>
+      <div class="field"><label for="a-p">Contraseña</label><input id="a-p" class="input" type="password" autocomplete="${reg ? "new-password" : "current-password"}" aria-describedby="a-p-h" value="${reg ? "1234" : "contraseña"}">
+        <span id="a-p-h" class="${reg ? "err" : "help"}">${reg ? "La contraseña tiene que tener al menos 8 caracteres." : ""}</span></div>
+      <button class="btn btn-primary" id="a-go">${reg ? "Crear cuenta" : "Ingresar"}</button>
+      <p class="help" style="margin:0">${reg ? '¿Ya tenés cuenta? <a href="#ingresar">Ingresá</a>' : '¿No tenés cuenta? <a href="#registrarme">Creala en un minuto</a>'}</p>
+    </form></main>`;
+    $("#authf").addEventListener("submit", (e) => {
+      e.preventDefault(); const b = $("#a-go"); b.disabled = true; b.textContent = reg ? "Creando cuenta…" : "Ingresando…";
+      setTimeout(() => { location.hash = "grupos"; }, 700);
+    });
+  }
+
+  // ---------- App shell ----------
+  function shell(inner, panel) {
+    return `<div class="app">
+      <aside class="side" aria-label="Navegación">
+        <a class="logo" href="#landing">${LOGO}</a>
+        <nav><a class="navlink" href="#grupos" ${route === "grupos" ? 'aria-current="page"' : ""}>${icon("users")} Mis grupos</a></nav>
+        <div style="display:grid;gap:2px"><small>Grupos</small>
+          <a class="navlink" href="#grupo" ${route === "grupo" ? 'aria-current="page"' : ""}>${icon("mountain")} Bariloche 2026</a>
+          <a class="navlink" href="#grupo">${icon("home")} Depto Palermo</a>
+        </div>
+      </aside>
+      <main class="main"><div class="main-in">${inner}</div></main>
+      ${panel ? `<aside class="panel" aria-label="Cómo están las cuentas">${panel}</aside>` : ""}
+    </div>`;
+  }
+  const coldMsg = `<div class="coldstart" role="status"><b>Despertando el servidor…</b><span class="help" style="color:inherit">La primera carga del día puede tardar hasta un minuto.</span><div class="bar"></div></div>`;
+  const skList = (n) => `<div class="list" aria-hidden="true">${Array.from({ length: n }, () => `<div class="item"><span class="sk" style="width:36px;height:36px;border-radius:10px"></span><div class="t" style="display:grid;gap:6px"><span class="sk" style="height:14px;width:55%"></span><span class="sk" style="height:12px;width:30%"></span></div><span class="sk" style="height:16px;width:80px"></span></div>`).join("")}</div>`;
+  const errBlock = (what) => `<div class="errbox" role="alert">${icon("wifiOff")}<b>No hay conexión con el servidor</b><span>No pudimos cargar ${what}. Revisá tu conexión y probá de nuevo.</span><button class="btn" data-retry>Reintentar</button></div>`;
+
+  // ---------- Mis grupos ----------
+  function renderGrupos() {
+    const b = balances()[ME];
+    const head = `<div class="head"><h1>Mis grupos</h1><button class="btn btn-primary add">${icon("plus")} Crear grupo</button></div>`;
+    let body;
+    if (dataState === "loading" || dataState === "cold") {
+      body = `${dataState === "cold" ? coldMsg : ""}<div class="cards" aria-busy="true"><span class="sr">Cargando grupos</span>${Array.from({ length: 3 }, () => `<div class="card" style="cursor:default"><span class="sk" style="height:18px;width:60%"></span><div class="row"><span class="sk" style="height:28px;width:90px;border-radius:999px"></span><span class="sk" style="height:26px;width:100px"></span></div></div>`).join("")}</div>`;
+    } else if (dataState === "empty") {
+      body = `<div class="empty"><span class="vale-firma" style="font-size:28px">tu primer grupo</span><p>Todavía no tenés grupos. Armá uno para el viaje, el depto o el asado.</p><button class="btn btn-primary">${icon("plus")} Crear un grupo</button></div>`;
+    } else if (dataState === "error") {
+      body = errBlock("tus grupos");
+    } else {
+      const card = (name, ids, cents, ico) => `<a class="card" href="#grupo" style="text-decoration:none;color:inherit"><div style="display:flex;gap:10px;align-items:center"><span class="ico">${icon(ico)}</span><h3>${name}</h3></div>
+        <div class="row"><div class="avs">${ids.map(i => av(i, true)).join("")}</div>
+        <div class="bal">${cents === 0 ? `<b class="saldado" style="font-size:18px">Están a mano</b>` : `<span>${cents > 0 ? "Te deben" : "Debés"}</span><b class="num ${cents > 0 ? "pos" : "neg"}">${money(Math.abs(cents))}</b>`}</div></div></a>`;
+      body = `<div class="cards">${card("Bariloche 2026", [1, 2, 3, 4], b, "mountain")}${card("Depto Palermo", [1, 2], -4560000, "home")}${card("Asado del sábado", [1, 2, 3, 4], 0, "food")}</div>`;
+    }
+    view.innerHTML = shell(head + body);
+    view.querySelectorAll("[data-retry]").forEach(x => x.addEventListener("click", () => { dataState = "ok"; setPressed("data-state", "ok"); render(); }));
+    view.querySelectorAll(".head .add, .empty .btn").forEach(x => x.addEventListener("click", () => toast("Crear grupo no está en este prototipo")));
+  }
+
+  // ---------- Detalle del grupo ----------
+  function cuentasPanel() {
+    const b = balances(), mine = b[ME], sug = settle(b), mineSug = sug.filter(s => s.de === ME || s.a === ME), other = sug.filter(s => s.de !== ME && s.a !== ME);
+    if (dataState === "loading" || dataState === "cold") return `<h2>Cómo están las cuentas</h2><div aria-hidden="true" style="display:grid;gap:12px"><span class="sk" style="height:14px;width:40%"></span><span class="sk" style="height:40px;width:70%"></span><span class="sk" style="height:64px"></span><span class="sk" style="height:64px"></span></div>`;
+    if (dataState === "error") return `<h2>Cómo están las cuentas</h2><p class="help">No pudimos cargar los saldos.</p>`;
+    if (dataState === "empty" || !sug.length) return `<h2>Cómo están las cuentas</h2><p><span class="saldado" style="font-size:20px;font-weight:800">Están todos a mano.</span></p>`;
+    return `<h2>Cómo están las cuentas</h2>
+      <div class="mine"><span class="lbl ${mine >= 0 ? "pos" : "neg"}">${mine > 0 ? "Te deben" : mine < 0 ? "Debés" : "Estás a mano"}</span><span class="amt num ${mine >= 0 ? "pos" : "neg"}" aria-label="${mine >= 0 ? "Te deben" : "Debés"} ${money(Math.abs(mine))}">${money(Math.abs(mine))}</span></div>
+      <div class="vales">${mineSug.map(s => valeHTML(s.de, s.a, s.monto, { action: true })).join("")}</div>
+      ${other.length ? `<p class="help" style="margin:0">Entre los demás</p><div class="vales">${other.map(s => valeHTML(s.de, s.a, s.monto, { action: true })).join("")}</div>` : ""}`;
+  }
+  function renderGrupo() {
+    const tabs = [["gastos", "Gastos"], ["balances", "Balances"], ["pagos", "Pagos"], ["miembros", "Miembros"]];
+    const head = `<div class="head"><div style="display:grid;gap:4px"><h1>Bariloche 2026</h1><div style="display:flex;gap:10px;align-items:center"><div class="avs">${[1, 2, 3, 4].map(i => av(i, true)).join("")}</div><span class="help">4 miembros</span></div></div>
+      <button class="btn btn-primary add" data-nuevo>${icon("plus")} Agregar gasto</button></div>
+      <div class="tabs" role="tablist" aria-label="Secciones del grupo">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${tab === k}" data-tab="${k}" class="${k === "balances" ? "mt" : ""}">${l}</button>`).join("")}</div>`;
+    let body = "";
+    const loading = dataState === "loading" || dataState === "cold";
+    if (loading) body = `${dataState === "cold" ? coldMsg : ""}<div aria-busy="true"><span class="sr">Cargando ${tab}</span><span class="sk" style="display:block;height:14px;width:60px;margin:6px 0 10px"></span>${skList(4)}</div>`;
+    else if (dataState === "error") body = errBlock("los gastos del grupo");
+    else if (tab === "gastos") {
+      if (dataState === "empty") body = `<div class="empty"><span class="vale-firma" style="font-size:28px">el primer gasto</span><p>Sin gastos todavía. El primero que pague, que lo anote.</p><button class="btn btn-primary" data-nuevo>${icon("plus")} Agregar un gasto</button></div>`;
+      else {
+        const days = [...new Set(db.gastos.map(g => g.fecha))];
+        body = days.map(d => `<div><p class="day">${d}</p><div class="list">${db.gastos.filter(g => g.fecha === d).map(g => {
+          const mine = partsOf(g)[ME] || 0, net = (g.pago === ME ? g.total : 0) - mine;
+          const modo = { IGUAL: "en partes iguales", MONTOS: "por montos", PORCENTAJE: "por porcentaje" }[g.modo];
+          return `<div class="item"><span class="ico">${icon(g.ico)}</span><div class="t"><b>${g.desc}</b><span>Pagó ${g.pago === ME ? "vos" : people[g.pago]}, ${modo}</span></div>
+            <div class="a"><b class="num">${money(g.total)}</b><span class="num ${net >= 0 ? "pos" : "neg"}">${net > 0 ? "te deben " + money(net) : net < 0 ? "tu parte " + money(-net) : "no participás"}</span></div></div>`;
+        }).join("")}</div></div>`).join("");
+      }
+    } else if (tab === "balances") {
+      const b = balances(), max = Math.max(1, ...Object.values(b).map(Math.abs));
+      body = `<div class="list" style="padding:18px"><div class="bars">${Object.entries(b).map(([id, v]) => {
+        const w = Math.abs(v) / max * 50;
+        return `<div class="brow"><span style="display:flex;gap:8px;align-items:center">${av(+id, true)}${people[id]}</span><div class="btrack" aria-hidden="true"><span class="bfill" style="${v >= 0 ? `left:50%;width:${w}%;background:var(--te-deben)` : `right:50%;width:${w}%;background:var(--debes)`}"></span></div><span class="num ${v >= 0 ? "pos" : "neg"}" style="text-align:right;font-weight:700">${v > 0 ? "+" : v < 0 ? "−" : ""}${money(Math.abs(v))}</span></div>`;
+      }).join("")}</div></div><div class="mtabs">${cuentasPanel().replace("<h2>Cómo están las cuentas</h2>", "<h2 style='font-size:18px'>Transferencias sugeridas</h2>")}</div>`;
+    } else if (tab === "pagos") {
+      body = db.pagos.length ? `<div class="list">${db.pagos.map(p => `<div class="item">${av(p.de)}<div class="t"><b>${p.de === ME ? "Vos" : people[p.de]} le pagó a ${p.a === ME ? "vos" : people[p.a]}</b><span>${p.fecha}</span></div><div class="a"><b class="num">${money(p.monto)}</b></div></div>`).join("")}</div>`
+        : `<div class="empty"><p>Cuando alguien salde una deuda, va a aparecer acá.</p></div>`;
+    } else {
+      body = `<div class="list">${[1, 2, 3, 4].map(id => `<div class="item">${av(id)}<div class="t"><b>${people[id] === "Vos" ? "Vos" : people[id]}</b><span>${id === 1 ? "Admin" : "Miembro"}</span></div></div>`).join("")}</div>
+        <div class="field"><label for="m-e">Agregar por email</label><div style="display:flex;gap:8px"><input id="m-e" class="input" type="email" placeholder="nombre@ejemplo.com"><button class="btn">Agregar</button></div></div>`;
+    }
+    view.innerHTML = shell(head + body, cuentasPanel()) + `<button class="btn btn-primary fab" data-nuevo>${icon("plus")} Gasto</button>`;
+    view.querySelectorAll("[data-tab]").forEach(x => x.addEventListener("click", () => { tab = x.dataset.tab; renderGrupo(); }));
+    view.querySelectorAll("[data-nuevo]").forEach(x => x.addEventListener("click", openGasto));
+    view.querySelectorAll("[data-retry]").forEach(x => x.addEventListener("click", () => { dataState = "ok"; setPressed("data-state", "ok"); render(); }));
+    view.querySelectorAll("[data-saldar]").forEach(x => x.addEventListener("click", (e) => {
+      const v = e.target.closest(".vale"); v.classList.add("tearing");
+      const p = { de: +v.dataset.de, a: +v.dataset.a, monto: +v.dataset.monto, fecha: "Hoy" };
+      setTimeout(() => { db.pagos.unshift(p); renderGrupo(); toast(`Pago registrado: ${money(p.monto)}`, () => { db.pagos.shift(); renderGrupo(); }); }, 420);
+    }));
+  }
+
+  // ---------- Nuevo gasto ----------
+  function openGasto() {
+    const f = { monto: "", desc: "", pago: ME, modo: "IGUAL", ids: [1, 2, 3, 4], vals: { 1: "", 2: "", 3: "", 4: "" } };
+    const m = $("#modal"); const opener = document.activeElement;
+    m.innerHTML = `<div class="scrim" data-close><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="g-t">
+      <div class="sheet-head"><h2 id="g-t">Nuevo gasto</h2><button class="iconbtn" aria-label="Cerrar" data-close>${icon("x")}</button></div>
+      <div class="field"><label for="g-m">Monto</label><input id="g-m" class="amount-in num" inputmode="decimal" placeholder="$ 0" autocomplete="off"></div>
+      <div class="field"><label for="g-d">Descripción</label><input id="g-d" class="input" placeholder="¿En qué se gastó?"><div class="chips" id="g-chips">${["Super", "Nafta", "Cena", "Alquiler"].map(c => `<button class="chip" type="button" aria-pressed="false">${c}</button>`).join("")}</div></div>
+      <div class="field"><span style="font-size:14px;font-weight:600">Pagó</span><div class="payers" id="g-pay">${[1, 2, 3, 4].map(i => `<button type="button" class="payer" data-id="${i}" aria-pressed="${i === ME}">${av(i)}${people[i]}</button>`).join("")}</div></div>
+      <div class="field"><span style="font-size:14px;font-weight:600" id="g-split-l">Entre quiénes</span>
+        <div class="seg" role="group" aria-labelledby="g-split-l" id="g-seg"><button type="button" data-modo="IGUAL" aria-pressed="true">Partes iguales</button><button type="button" data-modo="MONTOS" aria-pressed="false">Montos</button><button type="button" data-modo="PORCENTAJE" aria-pressed="false">Porcentajes</button></div>
+        <div class="parts" id="g-parts"></div><div class="sumbar" id="g-sum"></div></div>
+      <button class="btn btn-primary" id="g-save" disabled>Guardar gasto</button>
+    </div></div>`;
+    const total = () => Math.max(0, toCents(f.monto));
+    function draw() {
+      const t = total(); let html = "", sum = 0, ok = false, msg = "";
+      if (f.modo === "IGUAL") {
+        const parts = splitEqual(t, f.ids);
+        html = [1, 2, 3, 4].map(i => `<label class="part"><input type="checkbox" data-id="${i}" ${f.ids.includes(i) ? "checked" : ""}><span style="display:flex;gap:8px;align-items:center">${av(i, true)}${people[i]}</span><span class="num ${f.ids.includes(i) ? "" : "help"}">${f.ids.includes(i) ? money(parts[i] || 0) : "no participa"}</span></label>`).join("");
+        ok = t > 0 && f.ids.length > 0; msg = f.ids.length ? "" : "Elegí al menos una persona.";
+        $("#g-sum").innerHTML = msg ? `<span class="err">${msg}</span>` : "";
+      } else {
+        const pct = f.modo === "PORCENTAJE";
+        html = [1, 2, 3, 4].map(i => `<div class="part"><span>${av(i, true)}</span><label for="g-v${i}">${people[i]}</label><input id="g-v${i}" class="input small-in num" inputmode="decimal" data-id="${i}" placeholder="${pct ? "0 %" : "$ 0"}" value="${f.vals[i]}"></div>`).join("");
+        const target = pct ? 10000 : t; // % con 2 decimales
+        sum = [1, 2, 3, 4].reduce((a, i) => a + (pct ? Math.round(Number(String(f.vals[i]).replace(",", ".")) * 100 || 0) : toCents(f.vals[i])), 0);
+        const diff = target - sum; ok = t > 0 && diff === 0 && sum > 0;
+        const show = (c) => pct ? `${(c / 100).toLocaleString("es-AR")} %` : money(c);
+        const w = target ? Math.min(100, sum / target * 100) : 0;
+        $("#g-sum").innerHTML = t ? `<div class="track"><div class="fill" style="width:${w}%;background:${diff === 0 ? "var(--te-deben)" : "var(--debes)"}"></div></div>
+          <span class="num ${diff === 0 ? "pos" : "neg"}" style="font-size:14px;font-weight:600">${diff === 0 ? "Cierra justo" : diff > 0 ? `Faltan ${show(diff)}` : `Sobran ${show(-diff)}`}</span>` : `<span class="help">Cargá primero el monto.</span>`;
+      }
+      const keep = document.activeElement && document.activeElement.id;
+      $("#g-parts").innerHTML = html;
+      if (keep && $("#" + keep)) { const el = $("#" + keep); el.focus(); const v = el.value; el.setSelectionRange(v.length, v.length); }
+      $("#g-save").disabled = !ok;
+    }
+    $("#g-m").addEventListener("input", (e) => { f.monto = e.target.value; draw(); });
+    $("#g-d").addEventListener("input", (e) => { f.desc = e.target.value; });
+    m.querySelectorAll("#g-chips .chip").forEach(c => c.addEventListener("click", () => { m.querySelectorAll("#g-chips .chip").forEach(x => x.setAttribute("aria-pressed", "false")); c.setAttribute("aria-pressed", "true"); $("#g-d").value = f.desc = c.textContent; }));
+    m.querySelectorAll("#g-pay .payer").forEach(p => p.addEventListener("click", () => { f.pago = +p.dataset.id; m.querySelectorAll("#g-pay .payer").forEach(x => x.setAttribute("aria-pressed", String(x === p))); }));
+    m.querySelectorAll("#g-seg button").forEach(s => s.addEventListener("click", () => { f.modo = s.dataset.modo; m.querySelectorAll("#g-seg button").forEach(x => x.setAttribute("aria-pressed", String(x === s))); draw(); }));
+    $("#g-parts").addEventListener("change", (e) => { if (e.target.type === "checkbox") { const id = +e.target.dataset.id; f.ids = e.target.checked ? [...f.ids, id] : f.ids.filter(x => x !== id); draw(); } });
+    $("#g-parts").addEventListener("input", (e) => { if (e.target.classList.contains("small-in")) { f.vals[e.target.dataset.id] = e.target.value; draw(); } });
+    $("#g-save").addEventListener("click", () => {
+      const b = $("#g-save"); b.disabled = true; b.textContent = "Guardando…";
+      setTimeout(() => {
+        const t = total(), g = { id: Date.now(), desc: f.desc || "Gasto", ico: "receipt", total: t, pago: f.pago, fecha: "Hoy", modo: f.modo };
+        if (f.modo === "IGUAL") g.ids = [...f.ids];
+        else if (f.modo === "MONTOS") { g.parts = {}; for (const i of [1, 2, 3, 4]) { const c = toCents(f.vals[i]); if (c) g.parts[i] = c; } }
+        else { g.pct = {}; for (const i of [1, 2, 3, 4]) { const p = Number(String(f.vals[i]).replace(",", ".")); if (p) g.pct[i] = p; } }
+        db.gastos.unshift(g); close(); tab = "gastos"; if (dataState !== "ok") { dataState = "ok"; setPressed("data-state", "ok"); }
+        renderGrupo(); toast("Gasto guardado", () => { db.gastos.shift(); renderGrupo(); });
+      }, 600);
+    });
+    function close() { m.innerHTML = ""; document.removeEventListener("keydown", esc); if (opener && opener.isConnected) opener.focus(); }
+    function esc(e) { if (e.key === "Escape") close(); }
+    document.addEventListener("keydown", esc);
+    m.querySelector(".scrim").addEventListener("click", (e) => { if (e.target.hasAttribute("data-close") || e.target.closest(".iconbtn")) close(); });
+    draw(); $("#g-m").focus();
+  }
+
+  // ---------- Toast ----------
+  let tt;
+  function toast(text, undo) {
+    const t = $("#toast"); clearTimeout(tt);
+    t.innerHTML = `<div class="toast" role="status"><span>${text}</span>${undo ? `<button id="t-undo">Deshacer</button>` : ""}</div>`;
+    if (undo) $("#t-undo").addEventListener("click", () => { t.innerHTML = ""; undo(); });
+    tt = setTimeout(() => { t.innerHTML = ""; }, 4000);
+  }
+
+  route = ROUTES.includes(location.hash.slice(1)) ? location.hash.slice(1) : "landing";
+  render();
+})();
+</script>
