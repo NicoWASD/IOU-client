@@ -1,0 +1,121 @@
+@import 'tailwindcss';
+@import '@fontsource/schibsted-grotesk/400.css';
+@import '@fontsource/schibsted-grotesk/500.css';
+@import '@fontsource/schibsted-grotesk/600.css';
+@import '@fontsource/schibsted-grotesk/700.css';
+@import '@fontsource/schibsted-grotesk/800.css';
+@import '@fontsource/caveat/600.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tokens de IOU (docs/design.md, sección 2). Claro por defecto. */
+:root {
+  --paper: #f6f7f9;
+  --surface: #ffffff;
+  --graphite: #1b1e25;
+  --pencil: #5f6573;
+  --rule: #e2e5eb;
+  --birome: #2337c6;
+  --birome-soft: #e8ebfb;
+  --on-birome: #ffffff;
+  --te-deben: #0e7a55;
+  --debes: #c2303b;
+  --resaltador: #ffe45c;
+  --skeleton: #e7eaf0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --paper: #111318;
+    --surface: #191c23;
+    --graphite: #e8eaf0;
+    --pencil: #a3a9b6;
+    --rule: #2a2e38;
+    --birome: #8b9bff;
+    --birome-soft: #1e2447;
+    --on-birome: #0e1330;
+    --te-deben: #4fd1a1;
+    --debes: #ff7a84;
+    --skeleton: #252933;
+    color-scheme: dark;
+  }
+}
+.dark {
+  --paper: #111318;
+  --surface: #191c23;
+  --graphite: #e8eaf0;
+  --pencil: #a3a9b6;
+  --rule: #2a2e38;
+  --birome: #8b9bff;
+  --birome-soft: #1e2447;
+  --on-birome: #0e1330;
+  --te-deben: #4fd1a1;
+  --debes: #ff7a84;
+  --skeleton: #252933;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Schibsted Grotesk', 'Segoe UI', system-ui, sans-serif;
+  --font-firma: 'Caveat', 'Segoe Print', cursive;
+
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-graphite: var(--graphite);
+  --color-pencil: var(--pencil);
+  --color-rule: var(--rule);
+  --color-birome: var(--birome);
+  --color-birome-soft: var(--birome-soft);
+  --color-te-deben: var(--te-deben);
+  --color-debes: var(--debes);
+  --color-resaltador: var(--resaltador);
+
+  /* Tema de shadcn mapeado a los tokens de IOU */
+  --color-background: var(--paper);
+  --color-foreground: var(--graphite);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--graphite);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--graphite);
+  --color-primary: var(--birome);
+  --color-primary-foreground: var(--on-birome);
+  --color-secondary: var(--birome-soft);
+  --color-secondary-foreground: var(--birome);
+  --color-muted: var(--skeleton);
+  --color-muted-foreground: var(--pencil);
+  --color-accent: var(--birome-soft);
+  --color-accent-foreground: var(--birome);
+  --color-destructive: var(--debes);
+  --color-border: var(--rule);
+  --color-input: var(--rule);
+  --color-ring: var(--birome);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.1s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.1s !important;
+    }
+  }
+}

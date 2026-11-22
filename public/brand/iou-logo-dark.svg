@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 302 120" role="img" aria-label="IOU"><title>IOU</title><defs>
+    <clipPath id="iou-t"><rect x="-20" y="-20" width="342" height="78"/></clipPath>
+    <clipPath id="iou-b"><rect x="-20" y="62" width="342" height="120"/></clipPath>
+  </defs>
+  <path clip-path="url(#iou-t)" fill="#E8EAF0" fill-rule="evenodd" d="M0 0H30V120H0ZM48 60a60 60 0 1 0 120 0a60 60 0 1 0-120 0ZM78 60a30 30 0 1 0 60 0a30 30 0 1 0-60 0ZM186 0H216V66A24 24 0 0 0 264 66V0H294V66A54 54 0 0 1 186 66Z"/>
+  <g transform="translate(8 0)"><path clip-path="url(#iou-b)" fill="#8B9BFF" fill-rule="evenodd" d="M0 0H30V120H0ZM48 60a60 60 0 1 0 120 0a60 60 0 1 0-120 0ZM78 60a30 30 0 1 0 60 0a30 30 0 1 0-60 0ZM186 0H216V66A24 24 0 0 0 264 66V0H294V66A54 54 0 0 1 186 66Z"/></g></svg>
