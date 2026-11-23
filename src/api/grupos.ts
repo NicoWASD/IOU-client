@@ -41,10 +41,12 @@ export function useGrupo(id: string) {
   });
 }
 
-export function useMiembros(id: string) {
+/** `inicial`: los miembros que ya trajo el detalle, para no mostrar otro esqueleto. */
+export function useMiembros(id: string, inicial?: Miembro[]) {
   return useQuery({
     queryKey: grupoKeys.miembros(id),
     queryFn: () => gruposApi.miembros(id),
+    placeholderData: inicial,
     enabled: id !== '',
   });
 }
@@ -66,9 +68,10 @@ export function useEditarGrupo(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: EdicionGrupo) => gruposApi.editar(id, body),
-    onSuccess: async (grupo) => {
+    onSuccess: (grupo) => {
       queryClient.setQueryData(grupoKeys.detalle(id), grupo);
-      await Promise.all([
+      // Sin await: el diálogo cierra con la respuesta del PATCH; los refetch van en segundo plano.
+      void Promise.all([
         queryClient.invalidateQueries({ queryKey: grupoKeys.todos, exact: true }),
         queryClient.invalidateQueries({ queryKey: grupoKeys.detalle(id), exact: true }),
       ]);

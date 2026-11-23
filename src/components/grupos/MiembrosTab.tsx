@@ -46,7 +46,7 @@ function EsqueletoMiembros() {
 
 /** Pestaña Miembros (HU-10, HU-11): activos y, aparte, los que ya no participan. */
 export function MiembrosTab({ grupo }: { grupo: GrupoDetalle }) {
-  const miembros = useMiembros(grupo.id);
+  const miembros = useMiembros(grupo.id, grupo.miembros);
   const carga = useCargaDemorada(miembros.isPending);
 
   if (miembros.isPending || carga.esqueleto) {

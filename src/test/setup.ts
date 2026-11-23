@@ -17,3 +17,11 @@ if (typeof window.matchMedia !== 'function') {
     }),
   });
 }
+
+// vaul (la hoja inferior) usa pointer capture, que jsdom no implementa.
+for (const metodo of ['setPointerCapture', 'releasePointerCapture'] as const) {
+  if (typeof Element.prototype[metodo] !== 'function') Element.prototype[metodo] = () => {};
+}
+if (typeof Element.prototype.hasPointerCapture !== 'function') {
+  Element.prototype.hasPointerCapture = () => false;
+}

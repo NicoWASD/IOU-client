@@ -27,7 +27,17 @@ export function Avatar({ usuario, size = 'md', decorativo = true, className }: A
 }
 
 /** Avatares superpuestos (hasta `max`, el resto como "+N"), con los nombres para lectores. */
-export function AvatarPila({ usuarios, max = 4 }: { usuarios: UsuarioRef[]; max?: number }) {
+export function AvatarPila({
+  usuarios,
+  max = 4,
+  fondo = 'surface',
+}: {
+  usuarios: UsuarioRef[];
+  max?: number;
+  /** Color sobre el que se apilan: el anillo de cada avatar lo imita. */
+  fondo?: 'surface' | 'paper';
+}) {
+  const anillo = fondo === 'paper' ? 'border-paper' : 'border-surface';
   const visibles = usuarios.slice(0, max);
   const resto = usuarios.length - visibles.length;
   return (
@@ -38,13 +48,16 @@ export function AvatarPila({ usuarios, max = 4 }: { usuarios: UsuarioRef[]; max?
           key={u.id}
           usuario={u}
           size="sm"
-          className="-ml-2 border-2 border-surface first:ml-0"
+          className={cn('-ml-2 border-2 first:ml-0', anillo)}
         />
       ))}
       {resto > 0 && (
         <span
           aria-hidden="true"
-          className="-ml-2 inline-grid size-7 place-items-center rounded-full border-2 border-surface bg-paper text-xs font-semibold text-pencil"
+          className={cn(
+            '-ml-2 inline-grid size-7 place-items-center rounded-full border-2 bg-rule text-xs font-semibold text-pencil',
+            anillo,
+          )}
         >
           +{resto}
         </span>

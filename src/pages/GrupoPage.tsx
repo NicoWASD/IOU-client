@@ -23,7 +23,7 @@ const noEncontrado = (err: unknown) =>
 /** Columna central de 720 px y panel lateral fijo en desktop (design.md 5). */
 function Layout({ children, panel }: { children: React.ReactNode; panel?: React.ReactNode }) {
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,720px)_240px]">
       <div className="grid max-w-[720px] min-w-0 content-start gap-6">{children}</div>
       {panel}
     </div>
@@ -33,10 +33,12 @@ function Layout({ children, panel }: { children: React.ReactNode; panel?: React.
 function PanelCuentas() {
   return (
     <aside
-      aria-label="Cómo están las cuentas"
+      aria-labelledby="panel-cuentas"
       className="hidden content-start gap-3 self-start border-l border-rule pl-6 lg:sticky lg:top-24 lg:grid"
     >
-      <h2 className="text-lg font-semibold">Cómo están las cuentas</h2>
+      <h2 id="panel-cuentas" className="text-lg font-semibold">
+        Cómo están las cuentas
+      </h2>
       <p className="text-pencil">Disponible cuando cargues gastos.</p>
     </aside>
   );
@@ -109,7 +111,7 @@ function Encabezado({ grupo }: { grupo: GrupoDetalle }) {
         )}
       </div>
       <div className="flex items-center gap-2.5">
-        <AvatarPila usuarios={activos} />
+        <AvatarPila usuarios={activos} fondo="paper" />
         <span className="text-sm text-pencil">{cantidad(activos.length)}</span>
       </div>
       {grupo.archivado && (
@@ -140,7 +142,8 @@ export function GrupoPage() {
       </Layout>
     );
   }
-  if (grupo.isError) {
+  // Un refetch fallido con datos ya cargados no tapa la pantalla: se sigue mostrando el grupo.
+  if (grupo.isError && !grupo.data) {
     if (noEncontrado(grupo.error)) return <NoEncontrado />;
     return (
       <ErrorCarga
@@ -155,7 +158,7 @@ export function GrupoPage() {
   return (
     <Layout panel={<PanelCuentas />}>
       <Encabezado grupo={grupo.data} />
-      <GrupoTabs miembros={<MiembrosTab grupo={grupo.data} />} />
+      <GrupoTabs nombre={grupo.data.nombre} miembros={<MiembrosTab grupo={grupo.data} />} />
     </Layout>
   );
 }
