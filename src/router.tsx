@@ -4,6 +4,7 @@ import { RequireAuth } from '@/auth/RequireAuth';
 import { AppShell } from '@/components/AppShell';
 import { Toaster } from '@/components/ui/sonner';
 import { useEsDesktop } from '@/hooks/useMediaQuery';
+import { GrupoPage } from '@/pages/GrupoPage';
 import { GruposPage } from '@/pages/GruposPage';
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
@@ -31,7 +32,13 @@ export const routes: RouteObject[] = [
       {
         element: <RequireAuth />,
         children: [
-          { element: <AppShell />, children: [{ path: '/grupos', element: <GruposPage /> }] },
+          {
+            element: <AppShell />,
+            children: [
+              { path: '/grupos', element: <GruposPage /> },
+              { path: '/grupos/:id', element: <GrupoPage /> },
+            ],
+          },
         ],
       },
       { path: '*', element: <NotFoundPage /> },
