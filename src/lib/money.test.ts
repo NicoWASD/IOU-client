@@ -1,5 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { formatMoney, parseMoney, splitEqual } from './money';
+import { formatMoney, moneyToCents, parseMoney, splitEqual } from './money';
+
+describe('moneyToCents (Money del contrato → centavos)', () => {
+  it.each([
+    ['0.00', 0],
+    ['12500.50', 1250050],
+    ['-100.00', -10000],
+    ['0.01', 1],
+    ['-0.01', -1],
+  ])('%s → %i', (m, cents) => {
+    expect(moneyToCents(m)).toBe(cents);
+  });
+
+  it('un valor que no es Money tira error', () => {
+    expect(() => moneyToCents('12,50')).toThrow();
+  });
+});
 
 // Intl usa un espacio duro entre el signo y el número: lo normalizamos para comparar
 const plain = (s: string) => s.replace(/\s/g, ' ');

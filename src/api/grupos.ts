@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { apiRequest, esErrorDelCliente } from './client';
+import { apiRequest } from './client';
 import type { EdicionGrupo, GrupoDetalle, GrupoResumen, Miembro, NuevoGrupo } from './types';
 
 // Rutas del H2 (api-contract.md). El token lo agrega apiRequest.
@@ -14,9 +14,7 @@ export const gruposApi = {
   editar: (id: string, body: EdicionGrupo) =>
     apiRequest<{ grupo: GrupoDetalle }>('PATCH', grupoPath(id), { body }).then((r) => r.grupo),
   miembros: (id: string) =>
-    apiRequest<{ miembros: Miembro[] }>('GET', `${grupoPath(id)}/miembros`).then(
-      (r) => r.miembros,
-    ),
+    apiRequest<{ miembros: Miembro[] }>('GET', `${grupoPath(id)}/miembros`).then((r) => r.miembros),
   agregarMiembro: (id: string, email: string) =>
     apiRequest<{ miembro: Miembro }>('POST', `${grupoPath(id)}/miembros`, {
       body: { email },
@@ -31,11 +29,8 @@ export const grupoKeys = {
   miembros: (id: string) => ['grupos', id, 'miembros'] as const,
 };
 
-/** Un 4xx (404, 403...) no se reintenta; un error de red, una vez. */
-const reintentar = (fallos: number, err: unknown) => !esErrorDelCliente(err) && fallos < 1;
-
 export function useGrupos() {
-  return useQuery({ queryKey: grupoKeys.todos, queryFn: gruposApi.listar, retry: reintentar });
+  return useQuery({ queryKey: grupoKeys.todos, queryFn: gruposApi.listar });
 }
 
 export function useGrupo(id: string) {
@@ -43,7 +38,6 @@ export function useGrupo(id: string) {
     queryKey: grupoKeys.detalle(id),
     queryFn: () => gruposApi.detalle(id),
     enabled: id !== '',
-    retry: reintentar,
   });
 }
 
@@ -52,7 +46,6 @@ export function useMiembros(id: string) {
     queryKey: grupoKeys.miembros(id),
     queryFn: () => gruposApi.miembros(id),
     enabled: id !== '',
-    retry: reintentar,
   });
 }
 

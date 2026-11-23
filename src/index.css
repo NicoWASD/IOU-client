@@ -162,3 +162,103 @@
     opacity: 0;
   }
 }
+
+/* Diálogos y hojas (design.md 8): entran en 200 ms. Sin tw-animate-css: keyframes propios. */
+@layer components {
+  [data-slot='dialog-overlay'][data-state='open'],
+  [data-slot='alert-dialog-overlay'][data-state='open'] {
+    animation: overlay-in 200ms ease-out;
+  }
+  [data-slot='dialog-content'][data-state='open'],
+  [data-slot='alert-dialog-content'][data-state='open'] {
+    animation: dialog-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+/* Avatares (design.md 4): 6 tonos desaturados que no compiten con teDeben y debes. */
+:root {
+  --av1: #e4d8f3;
+  --av2: #d6e8f5;
+  --av3: #f5e1cf;
+  --av4: #d9eedc;
+  --av5: #f3d6df;
+  --av6: #e2e4d3;
+  --av-ink: #2a2d36;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --av1: #3b3250;
+    --av2: #263b4c;
+    --av3: #4a3626;
+    --av4: #27402d;
+    --av5: #4a2834;
+    --av6: #3b3d2a;
+    --av-ink: #e8eaf0;
+  }
+}
+.dark {
+  --av1: #3b3250;
+  --av2: #263b4c;
+  --av3: #4a3626;
+  --av4: #27402d;
+  --av5: #4a2834;
+  --av6: #3b3d2a;
+  --av-ink: #e8eaf0;
+}
+
+/* "Saldado": subrayado de resaltador (design.md 2). Único uso del amarillo. */
+@layer components {
+  .saldado {
+    background: linear-gradient(
+      transparent 55%,
+      var(--resaltador) 55%,
+      var(--resaltador) 90%,
+      transparent 90%
+    );
+    color: var(--graphite);
+    padding: 0 2px;
+  }
+}
+
+/* Barra indeterminada del aviso de cold start */
+@layer components {
+  .barra-indeterminada {
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--birome) 20%, transparent);
+  }
+  .barra-indeterminada::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: 35%;
+    border-radius: 2px;
+    background: var(--birome);
+    animation: indeterminada 1.3s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot='skeleton'] {
+      animation: none !important;
+    }
+  }
+}
+@keyframes indeterminada {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}

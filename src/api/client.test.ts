@@ -76,7 +76,10 @@ describe('apiRequest: sesión', () => {
   });
 
   it('un 204 resuelve sin body', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 204 })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(null, { status: 204 })),
+    );
     await expect(apiRequest('DELETE', '/grupos/g1/miembros/u2')).resolves.toBeUndefined();
   });
 
@@ -84,7 +87,10 @@ describe('apiRequest: sesión', () => {
     const listener = vi.fn();
     const off = authEvents.onSesionInvalida(listener);
     const body = { error: { code, message: 'Tu sesión expiró. Ingresá de nuevo.' } };
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { status: 401 })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify(body), { status: 401 })),
+    );
     try {
       tokenStore.set('t-usado');
       await expect(apiRequest('GET', '/grupos')).rejects.toBeInstanceOf(ApiError);
@@ -100,7 +106,10 @@ describe('apiRequest: sesión', () => {
     const body = {
       error: { code: 'CREDENCIALES_INVALIDAS', message: 'Email o contraseña incorrectos' },
     };
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { status: 401 })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify(body), { status: 401 })),
+    );
     try {
       await expect(apiRequest('POST', '/auth/login', { body: {} })).rejects.toBeInstanceOf(
         ApiError,

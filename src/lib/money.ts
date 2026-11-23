@@ -52,3 +52,12 @@ export function parseMoney(input: string): number | null {
   if (!/^\d+(\.\d{1,2})?$/.test(s)) return null;
   return Math.round(Number(s) * 100);
 }
+
+/** `Money` del contrato (`"-100.00"`) → centavos (`-10000`). Tira si el formato no es el de la API. */
+export function moneyToCents(m: string): number {
+  const match = /^(-)?(\d+)\.(\d{2})$/.exec(m);
+  if (!match) throw new Error(`Monto inválido: ${m}`);
+  const [, signo, enteros, centavos] = match;
+  const cents = Number(enteros) * 100 + Number(centavos);
+  return signo ? -cents : cents;
+}

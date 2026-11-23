@@ -2,6 +2,7 @@ import { Outlet, type RouteObject } from 'react-router';
 import { AuthProvider } from '@/auth/AuthProvider';
 import { RequireAuth } from '@/auth/RequireAuth';
 import { AppShell } from '@/components/AppShell';
+import { Toaster } from '@/components/ui/sonner';
 import { GruposPage } from '@/pages/GruposPage';
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
@@ -12,6 +13,7 @@ function Root() {
   return (
     <AuthProvider>
       <Outlet />
+      <Toaster />
     </AuthProvider>
   );
 }
