@@ -231,6 +231,7 @@ export function AppFrame() {
   return (
     <div
       role="group"
+      data-ui
       aria-label="Ejemplo: así se ve el grupo Bariloche 2026 en IOU"
       className="app-frame min-w-0 overflow-hidden rounded-[20px] border border-rule bg-surface shadow-[0_1px_0_var(--rule),0_24px_48px_-24px_rgb(27_30_37/0.18)]"
     >

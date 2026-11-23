@@ -117,7 +117,10 @@ export function FragmentoSaldos() {
 export function Comparacion() {
   const porGasto = [...new Set(PAGOS_SUELTOS.map((p) => p.gasto))];
   return (
-    <div className="grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-6">
+    <div
+      data-ui
+      className="grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-6"
+    >
       <div className={cn(marco, 'gap-2')}>
         <p className="flex items-baseline justify-between gap-3 text-[15px] font-bold">
           Gasto por gasto

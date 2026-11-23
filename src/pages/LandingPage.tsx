@@ -33,7 +33,7 @@ const PASOS = [
   },
 ];
 
-const wrap = 'mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8';
+const wrap = 'mx-auto w-full max-w-[82rem] px-4 sm:px-6 lg:px-8';
 
 function Seccion({
   id,
@@ -115,7 +115,7 @@ export function LandingPage() {
           <div
             className={cn(
               wrap,
-              'grid gap-10 pt-12 pb-16 md:pt-16 md:pb-20 xl:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)] xl:items-center xl:gap-10 xl:py-16',
+              'grid gap-10 pt-12 pb-16 md:pt-16 md:pb-20 xl:grid-cols-[minmax(0,0.38fr)_minmax(0,0.62fr)] xl:items-start xl:gap-10 xl:py-16',
             )}
           >
             <div className="max-w-xl">
@@ -142,6 +142,9 @@ export function LandingPage() {
                   <a href="#reparto">Probá el reparto</a>
                 </Button>
               </div>
+              <p className="mt-4 text-sm text-pencil">
+                Gratis. Funciona en el navegador del celu y de la compu.
+              </p>
             </div>
             <AppFrame />
           </div>
@@ -195,6 +198,7 @@ export function LandingPage() {
               >
                 <div
                   aria-hidden="true"
+                  data-ui
                   className="max-w-md rounded-[18px] bg-paper p-3 sm:p-4 xl:max-w-none"
                 >
                   {p.fragmento}
