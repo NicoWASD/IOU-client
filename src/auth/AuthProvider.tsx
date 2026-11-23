@@ -11,6 +11,7 @@ import {
 import { useNavigate } from 'react-router';
 import { authApi, type AuthResponse, type Usuario } from '@/api/auth';
 import { ApiError } from '@/api/client';
+import { authEvents } from './events';
 import { tokenStore } from './tokenStore';
 
 export type AuthStatus = 'loading' | 'authenticated' | 'anonymous' | 'error';
@@ -44,16 +45,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     retry: false,
   });
 
-  // Token vencido o inválido: se descarta; RequireAuth redirige al login con el aviso (CA-03.2)
+  // Token vencido o inválido: se descarta junto con los datos del usuario, y RequireAuth
+  // redirige al login con el aviso (CA-03.2).
+  const sesionVencida = useCallback(() => {
+    tokenStore.clear();
+    queryClient.removeQueries({ queryKey: ['auth'] });
+    queryClient.removeQueries({ queryKey: ['grupos'] });
+    setSesionExpirada(true);
+    setToken(null);
+  }, [queryClient]);
+
   useEffect(() => {
     const err = me.error;
-    if (err instanceof ApiError && SESION_INVALIDA.has(err.code)) {
-      tokenStore.clear();
-      queryClient.removeQueries({ queryKey: ['auth'] });
-      setSesionExpirada(true);
-      setToken(null);
-    }
-  }, [me.error, queryClient]);
+    if (err instanceof ApiError && SESION_INVALIDA.has(err.code)) sesionVencida();
+  }, [me.error, sesionVencida]);
+
+  // Cualquier pedido a la API que responda 401 TOKEN_EXPIRADO o TOKEN_INVALIDO (api/client.ts)
+  useEffect(() => authEvents.onSesionInvalida(sesionVencida), [sesionVencida]);
 
   const iniciar = useCallback(
     ({ token: nuevo, usuario }: AuthResponse) => {
