@@ -12,7 +12,12 @@ export function CrearGrupoDialog({ open, onOpenChange }: Props) {
   const navigate = useNavigate();
 
   return (
-    <HojaODialogo open={open} onOpenChange={onOpenChange} titulo="Crear grupo">
+    <HojaODialogo
+      open={open}
+      onOpenChange={onOpenChange}
+      titulo="Crear grupo"
+      bloqueado={crear.isPending}
+    >
       <GrupoForm
         accion="Crear grupo"
         enviando="Creando grupo…"

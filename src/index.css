@@ -262,3 +262,18 @@
     transform: translateX(300%);
   }
 }
+
+/* En oscuro, el texto claro sobre la franja amarilla no llega a AA: el resaltador cubre
+   todo el alto del texto y la tinta pasa a ser oscura (contraste ~13:1). */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .saldado {
+    background: var(--resaltador);
+    color: #1b1e25;
+    border-radius: 2px;
+  }
+}
+.dark .saldado {
+  background: var(--resaltador);
+  color: #1b1e25;
+  border-radius: 2px;
+}

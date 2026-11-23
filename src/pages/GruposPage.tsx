@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useCargaDemorada } from '@/hooks/useCargaDemorada';
 import { useFocoTitulo } from '@/hooks/useFocoTitulo';
 
-const GRILLA = 'grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3';
+const GRILLA = 'grid gap-3.5 md:grid-cols-2 lg:grid-cols-3';
 
 function ListaGrupos({
   grupos,
@@ -80,13 +80,18 @@ export function GruposPage() {
     cuerpo = (
       <>
         {activos.length > 0 ? (
-          <ListaGrupos grupos={activos} label="Tus grupos" titulo="h2" />
+          <section aria-labelledby="grupos-activos" className="grid gap-3">
+            <h2 id="grupos-activos" className="sr-only">
+              Activos
+            </h2>
+            <ListaGrupos grupos={activos} label="Tus grupos" titulo="h3" />
+          </section>
         ) : (
           <p className="text-pencil">No tenés grupos activos.</p>
         )}
         {archivados.length > 0 && (
           <section aria-labelledby="grupos-archivados" className="grid gap-3 pt-4">
-            <h2 id="grupos-archivados" className="text-xl font-bold tracking-tight">
+            <h2 id="grupos-archivados" className="text-2xl font-bold tracking-tight">
               Archivados
             </h2>
             <p className="-mt-1 text-sm text-pencil">Solo se pueden consultar.</p>
@@ -107,7 +112,7 @@ export function GruposPage() {
         >
           Mis grupos
         </h1>
-        {lista && !vacio && (
+        {!vacio && (
           <Button className="h-11" onClick={() => setCreando(true)}>
             <Plus aria-hidden="true" />
             Crear grupo

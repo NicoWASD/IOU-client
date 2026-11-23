@@ -12,10 +12,7 @@ export function MiBalance({ balance }: { balance: Money }) {
   const meDeben = cents > 0;
   const monto = formatMoney(Math.abs(cents));
   return (
-    <span
-      className="grid justify-items-end"
-      aria-label={`${meDeben ? 'Te deben' : 'Debés'} ${monto}`}
-    >
+    <span className="grid justify-items-end">
       <span className="text-sm text-pencil">{meDeben ? 'Te deben' : 'Debés'}</span>
       <span
         className={cn(
@@ -39,7 +36,7 @@ export function GrupoCard({ grupo, titulo: Titulo = 'h2' }: Props) {
     <Link
       to={`/grupos/${grupo.id}`}
       className={cn(
-        'grid h-full gap-4 rounded-[14px] border border-rule bg-surface p-[18px] transition-colors',
+        'grid h-full gap-4 rounded-[14px] border border-rule bg-surface p-[18px] shadow-[0_1px_0_var(--rule)] transition-colors',
         'hover:border-[color-mix(in_srgb,var(--birome)_40%,var(--rule))]',
       )}
     >
@@ -61,8 +58,10 @@ export function GrupoCard({ grupo, titulo: Titulo = 'h2' }: Props) {
 /** Esqueleto con la misma forma que la tarjeta (design.md 7.1). */
 export function GrupoCardSkeleton() {
   return (
-    <div className="grid gap-4 rounded-[14px] border border-rule bg-surface p-[18px]">
-      <Skeleton className="h-[18px] w-3/5 bg-muted" />
+    <div className="grid gap-4 rounded-[14px] border border-rule bg-surface p-[18px] shadow-[0_1px_0_var(--rule)]">
+      <div className="flex h-7 items-center">
+        <Skeleton className="h-[18px] w-3/5 bg-muted" />
+      </div>
       <div className="flex items-end justify-between">
         <div className="grid gap-1.5">
           <div className="flex">

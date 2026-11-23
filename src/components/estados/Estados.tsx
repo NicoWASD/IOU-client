@@ -1,4 +1,4 @@
-import { WifiOff } from 'lucide-react';
+import { CircleAlert, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { ApiError } from '@/api/client';
 import { Button } from '@/components/ui/button';
@@ -30,10 +30,13 @@ export function Cargando({
   className?: string;
 }) {
   return (
-    <div aria-busy="true" className={cn('grid gap-4', className)}>
-      <span className="sr-only">{texto}</span>
+    <div className={cn('grid gap-4', className)}>
+      <div aria-busy="true">
+        <span className="sr-only">{texto}</span>
+        {esqueleto && <div aria-hidden="true">{children}</div>}
+      </div>
+      {/* Fuera del contenedor ocupado, para que los lectores anuncien el aviso */}
       {coldStart && <AvisoColdStart />}
-      {esqueleto && <div aria-hidden="true">{children}</div>}
     </div>
   );
 }
@@ -74,11 +77,12 @@ export function ErrorCarga({
   onReintentar: () => void;
   reintentando?: boolean;
 }) {
-  const sinConexion = !(error instanceof ApiError) || error.code === 'SIN_CONEXION';
+  const sinConexion = error instanceof ApiError && error.code === 'SIN_CONEXION';
+  const Icono = sinConexion ? WifiOff : CircleAlert;
   return (
     <div role="alert" className="grid justify-items-start gap-3 rounded-[14px] bg-debes/10 p-5">
       <p className="flex items-center gap-2 font-semibold text-debes">
-        <WifiOff aria-hidden="true" className="size-5" strokeWidth={1.75} />
+        <Icono aria-hidden="true" className="size-5" strokeWidth={1.75} />
         {sinConexion ? 'No hay conexión con el servidor' : `No pudimos cargar ${que}`}
       </p>
       <p className="text-pencil">

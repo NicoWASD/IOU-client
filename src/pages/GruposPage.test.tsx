@@ -210,3 +210,78 @@ describe('Crear grupo', () => {
     expect(within(dialogo).getByLabelText('Nombre')).toHaveAttribute('aria-invalid', 'true');
   });
 });
+
+describe('Crear grupo: foco y mobile', () => {
+  it('al cerrar el diálogo con Esc, el foco vuelve al botón que lo abrió', async () => {
+    mockApi({ 'GET /auth/me': me, 'GET /grupos': () => jsonResponse({ grupos: listaGrupos }) });
+    renderApp('/grupos');
+    const boton = await screen.findByRole('button', { name: 'Crear grupo' });
+    await userEvent.click(boton);
+    await screen.findByRole('dialog', { name: 'Crear grupo' });
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(boton).toHaveFocus();
+  });
+
+  it('en mobile es una hoja inferior con botón "Cerrar" y también crea el grupo', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }));
+    mockApi({
+      'GET /auth/me': me,
+      'GET /grupos': () => jsonResponse({ grupos: listaGrupos }),
+      'POST /grupos': () => jsonResponse({ grupo: grupoBariloche }, 201),
+      'GET /grupos/g1': () => jsonResponse({ grupo: grupoBariloche }),
+      'GET /grupos/g1/miembros': () => jsonResponse({ miembros: grupoBariloche.miembros }),
+    });
+    const { router } = renderApp('/grupos');
+    await userEvent.click(await screen.findByRole('button', { name: 'Crear grupo' }));
+    const hoja = await screen.findByRole('dialog', { name: 'Crear grupo' });
+    expect(hoja).toHaveAttribute('data-vaul-drawer-direction', 'bottom');
+    expect(within(hoja).getByRole('button', { name: 'Cerrar' })).toBeInTheDocument();
+    await userEvent.type(within(hoja).getByLabelText('Nombre'), 'Bariloche 2026');
+    await userEvent.click(within(hoja).getByRole('button', { name: 'Crear grupo' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/grupos/g1'));
+  });
+
+  it('mientras crea, Esc no cierra el diálogo', async () => {
+    mockApi({
+      'GET /auth/me': me,
+      'GET /grupos': () => jsonResponse({ grupos: listaGrupos }),
+      'POST /grupos': () => new Promise<Response>(() => {}),
+    });
+    renderApp('/grupos');
+    await userEvent.click(await screen.findByRole('button', { name: 'Crear grupo' }));
+    const dialogo = await screen.findByRole('dialog', { name: 'Crear grupo' });
+    await userEvent.type(within(dialogo).getByLabelText('Nombre'), 'Bariloche 2026');
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Crear grupo' }));
+    await within(dialogo).findByRole('button', { name: 'Creando grupo…' });
+    await userEvent.keyboard('{Escape}');
+    expect(screen.getByRole('dialog', { name: 'Crear grupo' })).toBeInTheDocument();
+  });
+
+  it('un 400 sin campos conocidos muestra el mensaje de la API', async () => {
+    mockApi({
+      'GET /auth/me': me,
+      'GET /grupos': () => jsonResponse({ grupos: listaGrupos }),
+      'POST /grupos': () =>
+        jsonResponse(
+          { error: { code: 'VALIDATION_ERROR', message: 'Revisá los datos', details: { x: 'y' } } },
+          400,
+        ),
+    });
+    renderApp('/grupos');
+    await userEvent.click(await screen.findByRole('button', { name: 'Crear grupo' }));
+    const dialogo = await screen.findByRole('dialog', { name: 'Crear grupo' });
+    await userEvent.type(within(dialogo).getByLabelText('Nombre'), 'Bariloche 2026');
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Crear grupo' }));
+    expect(await within(dialogo).findByRole('alert')).toHaveTextContent('Revisá los datos');
+  });
+});

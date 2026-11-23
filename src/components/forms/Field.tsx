@@ -3,6 +3,7 @@ import type { ComponentProps, ReactNode } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
 type Comunes = {
   id: string;
@@ -46,7 +47,7 @@ export function Field({ id, label, error, hint, className, ...inputProps }: Fiel
         id={id}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedByDe({ id, label, error, hint })}
-        className={className ?? 'h-11'}
+        className={cn('h-11', className)}
         {...inputProps}
       />
     </Marco>

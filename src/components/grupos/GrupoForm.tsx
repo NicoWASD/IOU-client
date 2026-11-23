@@ -6,6 +6,17 @@ import { Button } from '@/components/ui/button';
 import { fieldErrors, type FieldErrors } from '@/schemas/auth';
 import { grupoSchema, type GrupoForm as Valores } from '@/schemas/grupo';
 
+/** Solo los errores de campos que este formulario muestra; si no hay ninguno, null. */
+function camposConocidos(details?: Record<string, string>): FieldErrors | null {
+  const out: FieldErrors = {};
+  if (details?.nombre) out.nombre = details.nombre;
+  if (details?.descripcion) out.descripcion = details.descripcion;
+  return Object.keys(out).length ? out : null;
+}
+
+const enfocarPrimerError = (errores: FieldErrors) =>
+  document.getElementById(errores.nombre ? 'grupo-nombre' : 'grupo-descripcion')?.focus();
+
 type Props = {
   inicial?: Valores;
   /** "Crear grupo", "Guardar cambios" */
@@ -35,16 +46,20 @@ export function GrupoForm({
     const invalid = fieldErrors(grupoSchema, form);
     setErrors(invalid ?? {});
     if (invalid) {
-      document.getElementById(invalid.nombre ? 'grupo-nombre' : 'grupo-descripcion')?.focus();
+      enfocarPrimerError(invalid);
       return;
     }
     setOcupado(true);
     try {
       await onSubmit({ nombre: form.nombre.trim(), descripcion: form.descripcion.trim() });
     } catch (err) {
-      if (err instanceof ApiError && err.details) setErrors(err.details);
-      else
+      const campos = err instanceof ApiError ? camposConocidos(err.details) : null;
+      if (campos) {
+        setErrors(campos);
+        enfocarPrimerError(campos);
+      } else {
         setFormError(err instanceof ApiError ? err.message : 'No pudimos guardar. Probá de nuevo.');
+      }
       setOcupado(false);
     }
   }

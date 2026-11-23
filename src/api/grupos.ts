@@ -53,10 +53,11 @@ export function useCrearGrupo() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: gruposApi.crear,
-    onSuccess: async (grupo) => {
+    onSuccess: (grupo) => {
       // El detalle ya viene en la respuesta: la pantalla del grupo nuevo abre sin esqueleto.
       queryClient.setQueryData(grupoKeys.detalle(grupo.id), grupo);
-      await queryClient.invalidateQueries({ queryKey: grupoKeys.todos, exact: true });
+      // Sin await: la lista se refresca en segundo plano y la navegación no espera otro GET.
+      void queryClient.invalidateQueries({ queryKey: grupoKeys.todos, exact: true });
     },
   });
 }
