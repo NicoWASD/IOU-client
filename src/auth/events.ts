@@ -1,7 +1,8 @@
 // Bus mínimo de eventos de sesión: el cliente HTTP avisa y AuthProvider reacciona,
 // sin que `api/` dependa de React.
 
-type Listener = () => void;
+/** Recibe el token con el que se hizo el pedido rechazado (null si no llevaba). */
+type Listener = (tokenUsado: string | null) => void;
 const listeners = new Set<Listener>();
 
 export const authEvents = {
@@ -12,7 +13,7 @@ export const authEvents = {
       listeners.delete(fn);
     };
   },
-  emitSesionInvalida(): void {
-    for (const fn of [...listeners]) fn();
+  emitSesionInvalida(tokenUsado: string | null): void {
+    for (const fn of [...listeners]) fn(tokenUsado);
   },
 };

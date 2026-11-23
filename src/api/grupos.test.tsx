@@ -1,12 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, renderHook, screen, waitFor } from '@testing-library/react';
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthProvider } from '@/auth/AuthProvider';
+import { authEvents } from '@/auth/events';
 import { RequireAuth } from '@/auth/RequireAuth';
 import { tokenStore } from '@/auth/tokenStore';
-import { grupoBariloche, listaGrupos, tomi } from '@/test/fixtures/h2';
+import { grupoBariloche, grupoDepto, listaGrupos, tomi } from '@/test/fixtures/h2';
 import { jsonResponse, mockApi, usuarioDemo } from '@/test/utils';
 import {
   useAgregarMiembro,
@@ -47,7 +48,7 @@ function sembrar(queryClient: QueryClient) {
   queryClient.setQueryData(['grupos'], listaGrupos);
   queryClient.setQueryData(['grupos', 'g1'], grupoBariloche);
   queryClient.setQueryData(['grupos', 'g1', 'miembros'], grupoBariloche.miembros);
-  queryClient.setQueryData(['grupos', 'g2'], { ...grupoBariloche, id: 'g2' });
+  queryClient.setQueryData(['grupos', 'g2'], grupoDepto);
 }
 const invalidada = (queryClient: QueryClient, key: unknown[]) =>
   queryClient.getQueryState(key)?.isInvalidated;
@@ -215,7 +216,7 @@ describe('sesión inválida en una consulta', () => {
         <RouterProvider router={router} />
       </QueryClientProvider>,
     );
-    return { router };
+    return { router, queryClient };
   }
 
   it.each(['TOKEN_EXPIRADO', 'TOKEN_INVALIDO'])(
@@ -233,4 +234,28 @@ describe('sesión inválida en una consulta', () => {
       expect(screen.getByText('login')).toBeInTheDocument();
     },
   );
+
+  it('el aviso del bus con el token actual cierra la sesión y borra los grupos de la caché', async () => {
+    mockApi({
+      'GET /auth/me': () => jsonResponse({ usuario: usuarioDemo }),
+      'GET /grupos': () => jsonResponse({ grupos: listaGrupos }),
+    });
+    const { router, queryClient } = renderProtegido();
+    expect(await screen.findByText('grupos cargados')).toBeInTheDocument();
+    act(() => authEvents.emitSesionInvalida('t-valido'));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/ingresar'));
+    expect(queryClient.getQueryData(['grupos'])).toBeUndefined();
+  });
+
+  it('un 401 de un pedido hecho con un token viejo no cierra la sesión nueva', async () => {
+    mockApi({
+      'GET /auth/me': () => jsonResponse({ usuario: usuarioDemo }),
+      'GET /grupos': () => jsonResponse({ grupos: listaGrupos }),
+    });
+    const { router } = renderProtegido();
+    expect(await screen.findByText('grupos cargados')).toBeInTheDocument();
+    act(() => authEvents.emitSesionInvalida('t-viejo'));
+    expect(router.state.location.pathname).toBe('/x');
+    expect(tokenStore.get()).toBe('t-valido');
+  });
 });

@@ -85,9 +85,13 @@ describe('apiRequest: sesión', () => {
     const off = authEvents.onSesionInvalida(listener);
     const body = { error: { code, message: 'Tu sesión expiró. Ingresá de nuevo.' } };
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { status: 401 })));
-    await expect(apiRequest('GET', '/grupos')).rejects.toBeInstanceOf(ApiError);
-    expect(listener).toHaveBeenCalledTimes(1);
-    off();
+    try {
+      tokenStore.set('t-usado');
+      await expect(apiRequest('GET', '/grupos')).rejects.toBeInstanceOf(ApiError);
+      expect(listener).toHaveBeenCalledExactlyOnceWith('t-usado');
+    } finally {
+      off();
+    }
   });
 
   it('otros errores no emiten sesionInvalida', async () => {
@@ -97,8 +101,13 @@ describe('apiRequest: sesión', () => {
       error: { code: 'CREDENCIALES_INVALIDAS', message: 'Email o contraseña incorrectos' },
     };
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { status: 401 })));
-    await expect(apiRequest('POST', '/auth/login', { body: {} })).rejects.toBeInstanceOf(ApiError);
-    expect(listener).not.toHaveBeenCalled();
-    off();
+    try {
+      await expect(apiRequest('POST', '/auth/login', { body: {} })).rejects.toBeInstanceOf(
+        ApiError,
+      );
+      expect(listener).not.toHaveBeenCalled();
+    } finally {
+      off();
+    }
   });
 });

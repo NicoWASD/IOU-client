@@ -49,8 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // redirige al login con el aviso (CA-03.2).
   const sesionVencida = useCallback(() => {
     tokenStore.clear();
-    queryClient.removeQueries({ queryKey: ['auth'] });
-    queryClient.removeQueries({ queryKey: ['grupos'] });
+    queryClient.clear();
     setSesionExpirada(true);
     setToken(null);
   }, [queryClient]);
@@ -60,8 +59,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (err instanceof ApiError && SESION_INVALIDA.has(err.code)) sesionVencida();
   }, [me.error, sesionVencida]);
 
-  // Cualquier pedido a la API que responda 401 TOKEN_EXPIRADO o TOKEN_INVALIDO (api/client.ts)
-  useEffect(() => authEvents.onSesionInvalida(sesionVencida), [sesionVencida]);
+  // Cualquier pedido a la API que responda 401 TOKEN_EXPIRADO o TOKEN_INVALIDO (api/client.ts).
+  // Si el pedido usó un token que ya no es el guardado (llegó tarde de una sesión anterior),
+  // no se cierra la sesión actual.
+  useEffect(
+    () =>
+      authEvents.onSesionInvalida((tokenUsado) => {
+        if (tokenUsado === tokenStore.get()) sesionVencida();
+      }),
+    [sesionVencida],
+  );
 
   const iniciar = useCallback(
     ({ token: nuevo, usuario }: AuthResponse) => {

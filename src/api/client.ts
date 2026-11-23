@@ -63,7 +63,7 @@ export async function apiRequest<T>(
   if (!res.ok) {
     const e = (data as ErrorBody | null)?.error;
     const code = e?.code ?? 'ERROR';
-    if (res.status === 401 && SESION_INVALIDA.has(code)) authEvents.emitSesionInvalida();
+    if (res.status === 401 && SESION_INVALIDA.has(code)) authEvents.emitSesionInvalida(token);
     throw new ApiError(res.status, code, e?.message ?? `Error ${res.status}`, e?.details);
   }
   return data as T;

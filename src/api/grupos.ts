@@ -42,6 +42,7 @@ export function useGrupo(id: string) {
   return useQuery({
     queryKey: grupoKeys.detalle(id),
     queryFn: () => gruposApi.detalle(id),
+    enabled: id !== '',
     retry: reintentar,
   });
 }
@@ -50,6 +51,7 @@ export function useMiembros(id: string) {
   return useQuery({
     queryKey: grupoKeys.miembros(id),
     queryFn: () => gruposApi.miembros(id),
+    enabled: id !== '',
     retry: reintentar,
   });
 }
