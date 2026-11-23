@@ -1,23 +1,49 @@
+import { UserMinus } from 'lucide-react';
+import { useState } from 'react';
 import { useMiembros } from '@/api/grupos';
 import type { GrupoDetalle, Miembro } from '@/api/types';
+import { useAuth } from '@/auth/AuthProvider';
 import { Avatar } from '@/components/Avatar';
 import { Cargando, ErrorCarga } from '@/components/estados/Estados';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCargaDemorada } from '@/hooks/useCargaDemorada';
 import { cn } from '@/lib/utils';
+import { AgregarMiembroForm } from './AgregarMiembroForm';
+import { QuitarMiembroDialog } from './QuitarMiembroDialog';
 
-function FilaMiembro({ miembro }: { miembro: Miembro }) {
+function FilaMiembro({
+  miembro,
+  esVos,
+  onQuitar,
+}: {
+  miembro: Miembro;
+  esVos: boolean;
+  /** Solo para el admin, con el grupo activo, sobre otros miembros activos. */
+  onQuitar?: (boton: HTMLButtonElement) => void;
+}) {
   return (
     <li className="flex min-h-16 items-center gap-3 border-t border-rule px-4 py-3 first:border-t-0">
       <Avatar usuario={miembro} className={cn(!miembro.activo && 'opacity-60')} />
       <div className="grid min-w-0 flex-1">
         <span className={cn('truncate font-semibold', !miembro.activo && 'text-pencil')}>
-          {miembro.nombre}
+          {esVos ? `${miembro.nombre} (vos)` : miembro.nombre}
         </span>
         <span className="truncate text-sm text-pencil">{miembro.email}</span>
       </div>
       {miembro.activo && (
         <span className="text-sm text-pencil">{miembro.rol === 'ADMIN' ? 'Admin' : 'Miembro'}</span>
+      )}
+      {onQuitar && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-11 text-pencil hover:bg-debes/10 hover:text-debes"
+          aria-label={`Quitar a ${miembro.nombre}`}
+          onClick={(e) => onQuitar(e.currentTarget)}
+        >
+          <UserMinus aria-hidden="true" className="size-5" strokeWidth={1.75} />
+        </Button>
       )}
     </li>
   );
@@ -47,6 +73,10 @@ function EsqueletoMiembros() {
 /** Pestaña Miembros (HU-10, HU-11): activos y, aparte, los que ya no participan. */
 export function MiembrosTab({ grupo }: { grupo: GrupoDetalle }) {
   const miembros = useMiembros(grupo.id, grupo.miembros);
+  const { usuario } = useAuth();
+  // A quién se quiere quitar y el botón que abrió la confirmación (para devolverle el foco)
+  const [aQuitar, setAQuitar] = useState<{ miembro: Miembro; origen: HTMLElement } | null>(null);
+  const gestiona = grupo.miRol === 'ADMIN' && !grupo.archivado;
   const carga = useCargaDemorada(miembros.isPending);
 
   if (miembros.isPending || carga.esqueleto) {
@@ -72,27 +102,45 @@ export function MiembrosTab({ grupo }: { grupo: GrupoDetalle }) {
 
   return (
     <div className="grid gap-6">
+      {gestiona && <AgregarMiembroForm grupoId={grupo.id} />}
       <section aria-labelledby="miembros-activos" className="grid gap-3">
         <h2 id="miembros-activos" className="sr-only">
           Participan
         </h2>
-        <ul className={LISTA}>
+        <ul aria-labelledby="miembros-activos" className={LISTA}>
           {activos.map((m) => (
-            <FilaMiembro key={m.id} miembro={m} />
+            <FilaMiembro
+              key={m.id}
+              miembro={m}
+              esVos={m.id === usuario?.id}
+              onQuitar={
+                gestiona && m.id !== usuario?.id && m.rol !== 'ADMIN'
+                  ? (boton) => setAQuitar({ miembro: m, origen: boton })
+                  : undefined
+              }
+            />
           ))}
         </ul>
       </section>
       {inactivos.length > 0 && (
         <section aria-labelledby="miembros-inactivos" className="grid gap-3">
-          <h2 id="miembros-inactivos" className="text-lg font-semibold">
+          <h2 id="miembros-inactivos" tabIndex={-1} className="text-lg font-semibold outline-none">
             Ya no participan
           </h2>
-          <ul className={LISTA}>
+          <ul aria-labelledby="miembros-inactivos" className={LISTA}>
             {inactivos.map((m) => (
-              <FilaMiembro key={m.id} miembro={m} />
+              <FilaMiembro key={m.id} miembro={m} esVos={m.id === usuario?.id} />
             ))}
           </ul>
         </section>
+      )}
+      {gestiona && (
+        <QuitarMiembroDialog
+          grupoId={grupo.id}
+          miembro={aQuitar?.miembro ?? null}
+          origen={aQuitar?.origen ?? null}
+          onOpenChange={(open) => !open && setAQuitar(null)}
+        />
       )}
     </div>
   );

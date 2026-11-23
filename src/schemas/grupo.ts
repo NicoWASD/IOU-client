@@ -10,3 +10,11 @@ export const grupoSchema = z.object({
 });
 
 export type GrupoForm = z.input<typeof grupoSchema>;
+
+/** Email de la persona a agregar (reglas del H1; el back también lo normaliza). */
+export const emailMiembroSchema = z
+  .string()
+  .trim()
+  .min(1, 'Ingresá el email de la persona')
+  .max(120, 'El email puede tener hasta 120 caracteres.')
+  .pipe(z.email({ error: 'El email no es válido.' }));
