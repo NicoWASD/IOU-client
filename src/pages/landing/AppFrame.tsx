@@ -210,7 +210,7 @@ function Gastos() {
                       Pagó {g.pagoId === YO ? 'vos' : nombreDe(g.pagoId)} · entre {g.entre.length}
                     </span>
                   </span>
-                  <span className="text-[15px] font-semibold tabular-nums">
+                  <span className="text-[15px] font-semibold">
                     {formatMoney(g.totalCents)}
                   </span>
                 </li>
@@ -249,7 +249,7 @@ export function AppFrame() {
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-rule px-4 py-4 sm:px-5">
         <div className="grid gap-1">
           <p className="text-[22px] leading-tight font-bold tracking-tight">Bariloche 2026</p>
-          <p className="text-[13px] text-pencil tabular-nums">
+          <p className="text-[13px] text-pencil">
             {GASTOS.length} gastos · {formatMoney(TOTAL_GRUPO)} en total
           </p>
         </div>

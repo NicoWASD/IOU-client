@@ -42,7 +42,7 @@ export function FragmentoGasto() {
   return (
     <div className={marco}>
       <p className="text-[15px] font-bold">Nuevo gasto</p>
-      <span className="text-[36px] leading-none font-extrabold tracking-tight tabular-nums">
+      <span className="text-[36px] leading-none font-extrabold tracking-tight">
         $ 36.000
       </span>
       <div className="flex flex-wrap gap-1.5">
@@ -88,7 +88,7 @@ export function FragmentoSaldos() {
                 <span className="font-semibold">{m.nombre}</span>
                 <span
                   className={cn(
-                    'font-semibold tabular-nums',
+                    'font-semibold',
                     v >= 0 ? 'text-te-deben' : 'text-debes',
                   )}
                 >
@@ -124,7 +124,7 @@ export function Comparacion() {
       <div className={cn(marco, 'gap-2')}>
         <p className="flex items-baseline justify-between gap-3 text-[15px] font-bold">
           Gasto por gasto
-          <span className="text-[13px] font-medium text-pencil tabular-nums">
+          <span className="text-[13px] font-medium text-pencil">
             {PAGOS_SUELTOS.length} pagos
           </span>
         </p>
@@ -132,7 +132,7 @@ export function Comparacion() {
           {porGasto.map((gasto) => (
             <li key={gasto} className="grid gap-0.5 border-b border-rule py-2 last:border-b-0">
               <span className="text-[13px] font-medium text-pencil">{gasto}</span>
-              <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-[13px] tabular-nums">
+              <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-[13px]">
                 {PAGOS_SUELTOS.filter((p) => p.gasto === gasto).map((p) => (
                   <span key={`${p.de}-${p.a}`}>
                     {nombreDe(p.de)} → {nombreDe(p.a)} {formatMoney(p.montoCents)}
@@ -147,7 +147,7 @@ export function Comparacion() {
       <div className="grid content-start gap-3">
         <p className="flex items-baseline justify-between gap-3 text-[15px] font-bold">
           Con IOU
-          <span className="text-[13px] font-medium text-pencil tabular-nums">
+          <span className="text-[13px] font-medium text-pencil">
             {TRANSFERENCIAS.length} transferencias
           </span>
         </p>

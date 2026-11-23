@@ -56,7 +56,7 @@ export function DemoReparto() {
             aria-invalid={montoInvalido || undefined}
             aria-describedby={`${montoId}-r`}
             onChange={(e) => setTexto(e.target.value)}
-            className="h-12 text-lg font-bold tabular-nums"
+            className="h-12 text-lg font-bold"
           />
         </div>
         <div className="grid gap-1.5">
@@ -79,7 +79,7 @@ export function DemoReparto() {
             </button>
             <output
               aria-live="polite"
-              className="min-w-7 text-center text-lg font-bold tabular-nums"
+              className="min-w-7 text-center text-lg font-bold"
             >
               {personas}
             </output>
@@ -95,7 +95,7 @@ export function DemoReparto() {
           </div>
         </div>
       </div>
-      <p id={`${montoId}-r`} className="text-sm text-pencil tabular-nums">
+      <p id={`${montoId}-r`} className="text-sm text-pencil">
         {montoInvalido
           ? 'Escribí el monto con números, por ejemplo 36.000 o 100,50.'
           : `${formatMoney(total)} entre ${personas}: Sofi pone ${formatMoney(parteDeSofi)}${cuantoDeben}.`}

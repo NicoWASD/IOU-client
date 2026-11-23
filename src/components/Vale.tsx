@@ -39,7 +39,7 @@ export function Vale({
 }: ValeProps) {
   const style: CSSProperties | undefined = caer ? { animationDelay: `${delayMs}ms` } : undefined;
   const monto = (
-    <span className={cn('font-extrabold tabular-nums', compacto ? 'text-lg' : 'text-xl')}>
+    <span className={cn('font-extrabold', compacto ? 'text-lg' : 'text-xl')}>
       {formatMoney(montoCents)}
     </span>
   );

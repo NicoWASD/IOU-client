@@ -205,7 +205,7 @@ export function LandingPage() {
                 </div>
                 <div className="grid gap-1.5">
                   <h3 className="text-lg font-semibold">
-                    <span className="mr-2 text-birome tabular-nums">{i + 1}</span>
+                    <span className="mr-2 text-birome">{i + 1}</span>
                     {p.titulo}
                   </h3>
                   <p className="text-pencil">{p.texto}</p>
