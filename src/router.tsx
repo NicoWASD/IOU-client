@@ -1,15 +1,9 @@
 import { Outlet, type RouteObject } from 'react-router';
 import { AuthProvider } from '@/auth/AuthProvider';
 import { RequireAuth } from '@/auth/RequireAuth';
-import { AppShell } from '@/components/AppShell';
 import { Toaster } from '@/components/ui/sonner';
 import { useEsDesktop } from '@/hooks/useMediaQuery';
-import { GrupoPage } from '@/pages/GrupoPage';
-import { GruposPage } from '@/pages/GruposPage';
 import { LandingPage } from '@/pages/LandingPage';
-import { LoginPage } from '@/pages/LoginPage';
-import { NotFoundPage } from '@/pages/NotFoundPage';
-import { RegisterPage } from '@/pages/RegisterPage';
 
 function Root() {
   const esDesktop = useEsDesktop();
@@ -22,26 +16,43 @@ function Root() {
   );
 }
 
+// La landing va en el bundle principal; el resto se carga al entrar a cada ruta,
+// así la primera visita no baja el código de la app (CA-30.4, Lighthouse ≥ 90).
 export const routes: RouteObject[] = [
   {
     element: <Root />,
     children: [
       { path: '/', element: <LandingPage /> },
-      { path: '/ingresar', element: <LoginPage /> },
-      { path: '/registrarme', element: <RegisterPage /> },
+      {
+        path: '/ingresar',
+        lazy: async () => ({ Component: (await import('@/pages/LoginPage')).LoginPage }),
+      },
+      {
+        path: '/registrarme',
+        lazy: async () => ({ Component: (await import('@/pages/RegisterPage')).RegisterPage }),
+      },
       {
         element: <RequireAuth />,
         children: [
           {
-            element: <AppShell />,
+            lazy: async () => ({ Component: (await import('@/components/AppShell')).AppShell }),
             children: [
-              { path: '/grupos', element: <GruposPage /> },
-              { path: '/grupos/:id', element: <GrupoPage /> },
+              {
+                path: '/grupos',
+                lazy: async () => ({ Component: (await import('@/pages/GruposPage')).GruposPage }),
+              },
+              {
+                path: '/grupos/:id',
+                lazy: async () => ({ Component: (await import('@/pages/GrupoPage')).GrupoPage }),
+              },
             ],
           },
         ],
       },
-      { path: '*', element: <NotFoundPage /> },
+      {
+        path: '*',
+        lazy: async () => ({ Component: (await import('@/pages/NotFoundPage')).NotFoundPage }),
+      },
     ],
   },
 ];
