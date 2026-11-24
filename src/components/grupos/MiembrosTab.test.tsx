@@ -123,6 +123,58 @@ describe('Quitar del grupo (admin)', () => {
     ).toBe(true);
   });
 
+  it('al quitar, la lista se actualiza con la respuesta sin esperar los refetch, avisa y mueve el foco', async () => {
+    let lento = false;
+    mockMiembros(grupoBariloche, {
+      'GET /grupos/g1/miembros': () =>
+        lento
+          ? new Promise<Response>(() => {})
+          : jsonResponse({ miembros: grupoBariloche.miembros }),
+      'GET /grupos/g1': () =>
+        lento ? new Promise<Response>(() => {}) : jsonResponse({ grupo: grupoBariloche }),
+      'DELETE /grupos/g1/miembros/u2': () => {
+        lento = true;
+        return new Response(null, { status: 204 });
+      },
+    });
+    abrir(grupoBariloche);
+    const p = await panel();
+    await userEvent.click(within(p).getByRole('button', { name: 'Quitar a Tomi' }));
+    const dialogo = await screen.findByRole('alertdialog');
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Quitar del grupo' }));
+    // sonner es global: puede quedar el aviso de un test anterior
+    expect((await screen.findAllByText('Quitaste a Tomi del grupo')).length).toBeGreaterThan(0);
+    const activos = within(p).getByRole('list', { name: 'Participan' });
+    expect(within(activos).queryByText('Tomi')).not.toBeInTheDocument();
+    const inactivos = within(p).getByRole('list', { name: 'Ya no participan' });
+    expect(within(inactivos).getByText('Tomi')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'Ya no participan' })).toHaveFocus(),
+    );
+  });
+
+  it('al agregar, la persona aparece con la respuesta del POST sin esperar los refetch', async () => {
+    let lento = false;
+    mockMiembros(grupoBariloche, {
+      'GET /grupos/g1/miembros': () =>
+        lento
+          ? new Promise<Response>(() => {})
+          : jsonResponse({ miembros: grupoBariloche.miembros }),
+      'GET /grupos/g1': () =>
+        lento ? new Promise<Response>(() => {}) : jsonResponse({ grupo: grupoBariloche }),
+      'POST /grupos/g1/miembros': () => {
+        lento = true;
+        return jsonResponse({ miembro: lu }, 201);
+      },
+    });
+    abrir(grupoBariloche);
+    const p = await panel();
+    await userEvent.type(within(p).getByLabelText('Agregar por email'), 'lu@mail.com');
+    await userEvent.click(within(p).getByRole('button', { name: 'Agregar' }));
+    expect((await screen.findAllByText('Lu se sumó al grupo')).length).toBeGreaterThan(0);
+    expect(within(p).getByText('lu@mail.com')).toBeVisible();
+  });
+
   it('cancelar no llama a la API', async () => {
     const { fetchMock } = mockMiembros(grupoBariloche);
     abrir(grupoBariloche);

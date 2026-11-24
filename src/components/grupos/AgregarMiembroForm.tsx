@@ -33,7 +33,7 @@ export function AgregarMiembroForm({ grupoId }: { grupoId: string }) {
       setError(
         err instanceof ApiError
           ? (err.details?.email ?? err.message)
-          : 'No pudimos agregarlo. Probá de nuevo.',
+          : 'No pudimos agregar a la persona. Probá de nuevo.',
       );
       inputRef.current?.focus();
     }

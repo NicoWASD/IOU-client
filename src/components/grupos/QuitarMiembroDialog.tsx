@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { ApiError } from '@/api/client';
 import { useQuitarMiembro } from '@/api/grupos';
@@ -17,40 +17,32 @@ import { Button } from '@/components/ui/button';
 
 type Props = {
   grupoId: string;
+  open: boolean;
+  /** Se mantiene después de cerrar, para que el contenido no se vacíe mientras sale. */
   miembro: Miembro | null;
-  /** El botón que abrió el diálogo. */
-  origen: HTMLElement | null;
   onOpenChange: (open: boolean) => void;
+  /** A dónde va el foco al cerrar: el botón que lo abrió o, si ya no está, otro destino. */
+  onCloseAutoFocus: (e: Event) => void;
 };
 
 /**
  * Quitar del grupo (HU-11, design.md 7.6): confirmación con el verbo repetido en `debes`.
  * Si la API lo rechaza (SALDO_PENDIENTE, ADMIN_NO_PUEDE_SALIR), el mensaje queda en el diálogo.
  */
-export function QuitarMiembroDialog({ grupoId, miembro, origen, onOpenChange }: Props) {
+export function QuitarMiembroDialog({
+  grupoId,
+  open,
+  miembro,
+  onOpenChange,
+  onCloseAutoFocus,
+}: Props) {
   const quitar = useQuitarMiembro(grupoId);
   const [error, setError] = useState<string | null>(null);
 
-  // Diálogo controlado: al cerrar, el foco vuelve al botón "Quitar" si sigue en pantalla;
-  // si la persona pasó a "Ya no participan", al título de esa sección.
-  // Al cerrar, `origen` ya viene en null: se guarda el último.
-  const ultimoOrigen = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    if (origen) ultimoOrigen.current = origen;
-  }, [origen]);
-  const devolverFoco = (e: Event) => {
-    const previo = ultimoOrigen.current;
-    const destino = previo?.isConnected ? previo : document.getElementById('miembros-inactivos');
-    if (destino) {
-      e.preventDefault();
-      destino.focus();
-    }
-  };
-
-  const cambiar = (open: boolean) => {
+  const cambiar = (abierto: boolean) => {
     if (quitar.isPending) return;
-    if (!open) setError(null);
-    onOpenChange(open);
+    if (!abierto) setError(null);
+    onOpenChange(abierto);
   };
 
   async function confirmar() {
@@ -59,22 +51,26 @@ export function QuitarMiembroDialog({ grupoId, miembro, origen, onOpenChange }: 
     try {
       await quitar.mutateAsync(miembro.id);
       onOpenChange(false);
-      toast.success(`${miembro.nombre} ya no participa del grupo`);
+      toast.success(`Quitaste a ${miembro.nombre} del grupo`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No pudimos quitarlo. Probá de nuevo.');
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : `No pudimos quitar a ${miembro.nombre}. Probá de nuevo.`,
+      );
     }
   }
 
   return (
-    <AlertDialog open={miembro !== null} onOpenChange={cambiar}>
-      <AlertDialogContent onCloseAutoFocus={devolverFoco}>
+    <AlertDialog open={open} onOpenChange={cambiar}>
+      <AlertDialogContent onCloseAutoFocus={onCloseAutoFocus}>
         {miembro && (
           <>
             <AlertDialogHeader>
               <AlertDialogTitle>¿Quitar a {miembro.nombre} del grupo?</AlertDialogTitle>
               <AlertDialogDescription>
-                Va a dejar de ver el grupo. Si más adelante vuelve, lo podés agregar de nuevo por
-                email.
+                Va a dejar de ver el grupo. Si más adelante vuelve, podés sumar a {miembro.nombre}{' '}
+                de nuevo por email.
               </AlertDialogDescription>
             </AlertDialogHeader>
             {error && (

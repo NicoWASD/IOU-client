@@ -79,7 +79,25 @@ export function useEditarGrupo(id: string) {
   });
 }
 
-/** Después de un alta o una baja cambian los miembros, el detalle y los avatares de la lista. */
+/**
+ * Después de un alta o una baja cambian los miembros, el detalle y los avatares de la lista.
+ * Primero se aplica la respuesta en la caché (la pantalla cambia al instante) y los refetch
+ * corren en segundo plano, sin demorar el aviso.
+ */
+function aplicarMiembro(queryClient: QueryClient, id: string, miembro: Miembro) {
+  const reemplazar = (lista: Miembro[] | undefined) =>
+    lista &&
+    (lista.some((m) => m.id === miembro.id)
+      ? lista.map((m) => (m.id === miembro.id ? miembro : m))
+      : [...lista, miembro]);
+  queryClient.setQueryData<Miembro[]>(grupoKeys.miembros(id), reemplazar);
+  queryClient.setQueryData<GrupoDetalle>(
+    grupoKeys.detalle(id),
+    (g) => g && { ...g, miembros: reemplazar(g.miembros) ?? g.miembros },
+  );
+  void invalidarMiembros(queryClient, id);
+}
+
 function invalidarMiembros(queryClient: QueryClient, id: string) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: grupoKeys.miembros(id) }),
@@ -92,7 +110,8 @@ export function useAgregarMiembro(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (email: string) => gruposApi.agregarMiembro(id, email),
-    onSuccess: () => invalidarMiembros(queryClient, id),
+    // Si estaba inactivo, el back lo reactiva (CB-14): se reemplaza en la lista
+    onSuccess: (miembro) => aplicarMiembro(queryClient, id, miembro),
   });
 }
 
@@ -100,6 +119,13 @@ export function useQuitarMiembro(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (usuarioId: string) => gruposApi.quitarMiembro(id, usuarioId),
-    onSuccess: () => invalidarMiembros(queryClient, id),
+    onSuccess: (_, usuarioId) => {
+      // Baja lógica: queda en la lista con activo: false
+      const actual = queryClient
+        .getQueryData<Miembro[]>(grupoKeys.miembros(id))
+        ?.find((m) => m.id === usuarioId);
+      if (actual) aplicarMiembro(queryClient, id, { ...actual, activo: false });
+      else void invalidarMiembros(queryClient, id);
+    },
   });
 }
