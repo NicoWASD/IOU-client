@@ -131,6 +131,33 @@ describe('Detalle del grupo', () => {
     expect(texto.closest('[aria-busy="true"]')).not.toBeNull();
   });
 
+  it('si un refetch responde 404 (me quitaron del grupo), deja de mostrar el grupo en caché', async () => {
+    let quitado = false;
+    mockGrupo(grupoBariloche, {
+      'GET /grupos/g1': () =>
+        quitado
+          ? jsonResponse(
+              {
+                error: {
+                  code: 'GRUPO_NO_ENCONTRADO',
+                  message: 'Este grupo no existe o no sos parte',
+                },
+              },
+              404,
+            )
+          : jsonResponse({ grupo: grupoBariloche }),
+    });
+    const { queryClient } = renderApp('/grupos/g1');
+    await screen.findByRole('heading', { level: 1, name: 'Bariloche 2026' });
+    quitado = true;
+    await queryClient.refetchQueries({ queryKey: ['grupos', 'g1'], exact: true });
+    expect(await screen.findByText('Este grupo no existe o no sos parte')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { level: 1, name: 'Bariloche 2026' }),
+    ).not.toBeInTheDocument();
+    expect(queryClient.getQueryData(['grupos', 'g1'])).toBeUndefined();
+  });
+
   it('si falla un refetch con datos ya cargados, la pantalla sigue mostrando el grupo', async () => {
     let falla = false;
     mockGrupo(grupoBariloche, {

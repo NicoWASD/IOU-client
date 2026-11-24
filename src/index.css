@@ -412,3 +412,16 @@
     opacity: 0;
   }
 }
+
+/* Movimiento reducido (design.md 8): los diálogos solo hacen un fundido corto y la barra no se mueve */
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='dialog-content'][data-state='open'],
+  [data-slot='alert-dialog-content'][data-state='open'] {
+    animation: overlay-in 100ms ease-out;
+  }
+  .barra-indeterminada::after {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
+  }
+}

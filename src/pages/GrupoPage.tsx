@@ -1,5 +1,6 @@
 import { Archive, Pencil } from 'lucide-react';
-import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ApiError } from '@/api/client';
 import { useGrupo } from '@/api/grupos';
@@ -132,6 +133,13 @@ export function GrupoPage() {
   const { id = '' } = useParams();
   const grupo = useGrupo(id);
   const carga = useCargaDemorada(grupo.isPending);
+  const queryClient = useQueryClient();
+  const sinAcceso = grupo.isError && noEncontrado(grupo.error);
+
+  // Si me quitaron del grupo (404) no se muestra lo que quedó en caché (RN-16): se descarta.
+  useEffect(() => {
+    if (sinAcceso) queryClient.removeQueries({ queryKey: ['grupos', id] });
+  }, [sinAcceso, queryClient, id]);
 
   if (grupo.isPending || carga.esqueleto) {
     return (
@@ -142,9 +150,9 @@ export function GrupoPage() {
       </Layout>
     );
   }
-  // Un refetch fallido con datos ya cargados no tapa la pantalla: se sigue mostrando el grupo.
+  if (sinAcceso) return <NoEncontrado />;
+  // Un refetch fallido por red o 5xx con datos ya cargados no tapa la pantalla.
   if (grupo.isError && !grupo.data) {
-    if (noEncontrado(grupo.error)) return <NoEncontrado />;
     return (
       <ErrorCarga
         error={grupo.error}

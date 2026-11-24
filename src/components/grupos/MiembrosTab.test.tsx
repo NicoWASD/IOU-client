@@ -92,7 +92,7 @@ describe('Agregar por email (admin)', () => {
     expect(await within(p).findByText('Ingresá el email de la persona')).toBeVisible();
     await userEvent.type(within(p).getByLabelText('Agregar por email'), 'tomi@');
     await userEvent.click(within(p).getByRole('button', { name: 'Agregar' }));
-    expect(await within(p).findByText('El email no es válido.')).toBeVisible();
+    expect(await within(p).findByText('El email no es válido')).toBeVisible();
     expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
   });
 });

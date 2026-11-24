@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { apiRequest } from './client';
+import { ApiError, apiRequest } from './client';
 import type { EdicionGrupo, GrupoDetalle, GrupoResumen, Miembro, NuevoGrupo } from './types';
 
 // Rutas del H2 (api-contract.md). El token lo agrega apiRequest.
@@ -106,12 +106,27 @@ function invalidarMiembros(queryClient: QueryClient, id: string) {
   ]);
 }
 
+// Errores que dicen que lo que muestra la pantalla quedó viejo (otra pestaña u otro admin
+// cambió el grupo): se refresca para no seguir mostrando un estado que ya no existe.
+const ESTADO_VIEJO = new Set([
+  'MIEMBRO_NO_ENCONTRADO',
+  'GRUPO_NO_ENCONTRADO',
+  'SOLO_ADMIN',
+  'GRUPO_ARCHIVADO',
+  'YA_ES_MIEMBRO',
+]);
+function refrescarSiQuedoViejo(queryClient: QueryClient, id: string, err: unknown) {
+  if (err instanceof ApiError && ESTADO_VIEJO.has(err.code))
+    void invalidarMiembros(queryClient, id);
+}
+
 export function useAgregarMiembro(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (email: string) => gruposApi.agregarMiembro(id, email),
     // Si estaba inactivo, el back lo reactiva (CB-14): se reemplaza en la lista
     onSuccess: (miembro) => aplicarMiembro(queryClient, id, miembro),
+    onError: (err) => refrescarSiQuedoViejo(queryClient, id, err),
   });
 }
 
@@ -127,5 +142,6 @@ export function useQuitarMiembro(id: string) {
       if (actual) aplicarMiembro(queryClient, id, { ...actual, activo: false });
       else void invalidarMiembros(queryClient, id);
     },
+    onError: (err) => refrescarSiQuedoViejo(queryClient, id, err),
   });
 }

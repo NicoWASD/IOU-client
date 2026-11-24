@@ -161,6 +161,29 @@ describe('mutaciones (Review Focus 5)', () => {
     expect(invalidada(queryClient, ['grupos', 'g2'])).toBe(false);
   });
 
+  it.each([
+    ['MIEMBRO_NO_ENCONTRADO', 404],
+    ['GRUPO_NO_ENCONTRADO', 404],
+    ['SOLO_ADMIN', 403],
+    ['GRUPO_ARCHIVADO', 409],
+  ])('un error de estado (%s) invalida miembros, grupo y lista', async (code, status) => {
+    mockApi({
+      'DELETE /grupos/g1/miembros/u2': () =>
+        jsonResponse({ error: { code, message: 'x' } }, status),
+      'POST /grupos/g1/miembros': () => jsonResponse({ error: { code, message: 'x' } }, status),
+    });
+    const { queryClient, wrapper } = setup();
+    sembrar(queryClient);
+    const quitar = renderHook(() => useQuitarMiembro('g1'), { wrapper });
+    await expect(quitar.result.current.mutateAsync('u2')).rejects.toMatchObject({ code });
+    expect(invalidada(queryClient, ['grupos', 'g1', 'miembros'])).toBe(true);
+    expect(invalidada(queryClient, ['grupos'])).toBe(true);
+    sembrar(queryClient);
+    const agregar = renderHook(() => useAgregarMiembro('g1'), { wrapper });
+    await expect(agregar.result.current.mutateAsync('x@mail.com')).rejects.toMatchObject({ code });
+    expect(invalidada(queryClient, ['grupos', 'g1', 'miembros'])).toBe(true);
+  });
+
   it('una mutación que falla no invalida nada y expone el ApiError', async () => {
     mockApi({
       'DELETE /grupos/g1/miembros/u2': () =>
