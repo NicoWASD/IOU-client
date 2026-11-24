@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { authEvents } from '@/auth/events';
+import { tokenStore } from '@/auth/tokenStore';
 import { ApiError, apiRequest, joinUrl } from './client';
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  tokenStore.clear();
 });
 
 describe('joinUrl', () => {
@@ -47,5 +50,73 @@ describe('apiRequest', () => {
       vi.fn(async () => Promise.reject(new TypeError('Failed to fetch'))),
     );
     await expect(apiRequest('GET', '/auth/me')).rejects.toMatchObject({ code: 'SIN_CONEXION' });
+  });
+});
+
+describe('apiRequest: sesión', () => {
+  const authDe = (fetchMock: ReturnType<typeof vi.fn>) =>
+    new Headers((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].headers).get(
+      'Authorization',
+    );
+
+  it('sin opts.token usa el token del tokenStore', async () => {
+    tokenStore.set('t-guardado');
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    await apiRequest('GET', '/grupos');
+    expect(authDe(fetchMock)).toBe('Bearer t-guardado');
+  });
+
+  it('con token: null no manda Authorization aunque haya uno guardado', async () => {
+    tokenStore.set('t-guardado');
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    await apiRequest('POST', '/auth/login', { body: {}, token: null });
+    expect(authDe(fetchMock)).toBeNull();
+  });
+
+  it('un 204 resuelve sin body', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(null, { status: 204 })),
+    );
+    await expect(apiRequest('DELETE', '/grupos/g1/miembros/u2')).resolves.toBeUndefined();
+  });
+
+  it.each(['TOKEN_EXPIRADO', 'TOKEN_INVALIDO'])('un 401 %s emite sesionInvalida', async (code) => {
+    const listener = vi.fn();
+    const off = authEvents.onSesionInvalida(listener);
+    const body = { error: { code, message: 'Tu sesión expiró. Ingresá de nuevo.' } };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify(body), { status: 401 })),
+    );
+    try {
+      tokenStore.set('t-usado');
+      await expect(apiRequest('GET', '/grupos')).rejects.toBeInstanceOf(ApiError);
+      expect(listener).toHaveBeenCalledExactlyOnceWith('t-usado');
+    } finally {
+      off();
+    }
+  });
+
+  it('otros errores no emiten sesionInvalida', async () => {
+    const listener = vi.fn();
+    const off = authEvents.onSesionInvalida(listener);
+    const body = {
+      error: { code: 'CREDENCIALES_INVALIDAS', message: 'Email o contraseña incorrectos' },
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify(body), { status: 401 })),
+    );
+    try {
+      await expect(apiRequest('POST', '/auth/login', { body: {} })).rejects.toBeInstanceOf(
+        ApiError,
+      );
+      expect(listener).not.toHaveBeenCalled();
+    } finally {
+      off();
+    }
   });
 });

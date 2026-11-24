@@ -28,6 +28,7 @@
   --av3: #d9eedc;
   --av4: #f3d6df;
   --av5: #e2e4d3;
+  --av6: #e6e3da;
   --av-ink: #2a2d36;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -49,6 +50,7 @@
     --av3: #27402d;
     --av4: #4a2834;
     --av5: #3b3d2a;
+    --av6: #3a3832;
     --av-ink: #e8eaf0;
     color-scheme: dark;
   }
@@ -70,6 +72,7 @@
   --av3: #27402d;
   --av4: #4a2834;
   --av5: #3b3d2a;
+  --av6: #3a3832;
   --av-ink: #e8eaf0;
   color-scheme: dark;
 }
@@ -321,6 +324,77 @@
     opacity: 0;
   }
 }
+
+/* Diálogos y hojas (design.md 8): entran en 200 ms. Sin tw-animate-css: keyframes propios. */
+@layer components {
+  [data-slot='dialog-overlay'][data-state='open'],
+  [data-slot='alert-dialog-overlay'][data-state='open'] {
+    animation: overlay-in 200ms ease-out;
+  }
+  [data-slot='dialog-content'][data-state='open'],
+  [data-slot='alert-dialog-content'][data-state='open'] {
+    animation: dialog-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+/* Barra indeterminada del aviso de cold start */
+@layer components {
+  .barra-indeterminada {
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--birome) 20%, transparent);
+  }
+  .barra-indeterminada::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: 35%;
+    border-radius: 2px;
+    background: var(--birome);
+    animation: indeterminada 1.3s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot='skeleton'] {
+      animation: none !important;
+    }
+  }
+}
+@keyframes indeterminada {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+
+/* En oscuro, el texto claro sobre la franja amarilla no llega a AA: el resaltador cubre
+   todo el alto del texto y la tinta pasa a ser oscura (contraste ~13:1). */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .saldado {
+    background: var(--resaltador);
+    color: #1b1e25;
+    border-radius: 2px;
+  }
+}
+.dark .saldado {
+  background: var(--resaltador);
+  color: #1b1e25;
+  border-radius: 2px;
+}
+
 @keyframes vale-cortar-cuerpo {
   to {
     transform: translate(-8px, 4px) rotate(-3deg);
@@ -336,5 +410,18 @@
 @keyframes vale-fundido {
   from {
     opacity: 0;
+  }
+}
+
+/* Movimiento reducido (design.md 8): los diálogos solo hacen un fundido corto y la barra no se mueve */
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='dialog-content'][data-state='open'],
+  [data-slot='alert-dialog-content'][data-state='open'] {
+    animation: overlay-in 100ms ease-out;
+  }
+  .barra-indeterminada::after {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
   }
 }
