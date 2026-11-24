@@ -35,7 +35,7 @@ export const esErrorDelCliente = (err: unknown): boolean =>
   err instanceof ApiError && err.status >= 400 && err.status < 500;
 
 export async function apiRequest<T>(
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
   path: string,
   /** `token`: sin definir usa el del tokenStore; `null` no manda Authorization. */
   opts: { body?: unknown; token?: string | null; timeoutMs?: number } = {},

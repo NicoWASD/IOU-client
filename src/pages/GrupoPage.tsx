@@ -8,6 +8,7 @@ import type { GrupoDetalle } from '@/api/types';
 import { AvatarPila } from '@/components/Avatar';
 import { Cargando, ErrorCarga } from '@/components/estados/Estados';
 import { EditarGrupoDialog } from '@/components/grupos/EditarGrupoDialog';
+import { GastosTab } from '@/components/gastos/GastosTab';
 import { GrupoTabs } from '@/components/grupos/GrupoTabs';
 import { MiembrosTab } from '@/components/grupos/MiembrosTab';
 import { Button } from '@/components/ui/button';
@@ -166,7 +167,11 @@ export function GrupoPage() {
   return (
     <Layout panel={<PanelCuentas />}>
       <Encabezado grupo={grupo.data} />
-      <GrupoTabs nombre={grupo.data.nombre} miembros={<MiembrosTab grupo={grupo.data} />} />
+      <GrupoTabs
+        nombre={grupo.data.nombre}
+        gastos={<GastosTab grupo={grupo.data} />}
+        miembros={<MiembrosTab grupo={grupo.data} />}
+      />
     </Layout>
   );
 }

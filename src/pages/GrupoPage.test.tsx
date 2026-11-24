@@ -19,6 +19,8 @@ function mockGrupo(grupo: GrupoDetalle, extra: Parameters<typeof mockApi>[0] = {
     'GET /auth/me': me,
     [`GET /grupos/${grupo.id}`]: () => jsonResponse({ grupo }),
     [`GET /grupos/${grupo.id}/miembros`]: () => jsonResponse({ miembros: grupo.miembros }),
+    [`GET /grupos/${grupo.id}/gastos`]: () =>
+      jsonResponse({ gastos: [], page: 1, pageSize: 20, total: 0 }),
     ...extra,
   });
 }
@@ -41,10 +43,10 @@ describe('Detalle del grupo', () => {
     expect(pestañas.getByRole('tab', { name: 'Gastos' })).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('Gastos, Balances y Pagos avisan que llegan en la próxima versión', async () => {
+  it('Gastos arranca vacía; Balances y Pagos llegan en la próxima versión', async () => {
     mockGrupo(grupoBariloche);
     const { router } = renderApp('/grupos/g1');
-    expect(await screen.findByRole('tabpanel')).toHaveTextContent('Llega en la próxima versión');
+    expect(await screen.findByText(/Sin gastos todavía/)).toBeVisible();
     await userEvent.click(screen.getByRole('tab', { name: 'Balances' }));
     expect(screen.getByRole('tabpanel')).toHaveTextContent('Llega en la próxima versión');
     await userEvent.click(screen.getByRole('tab', { name: 'Pagos' }));

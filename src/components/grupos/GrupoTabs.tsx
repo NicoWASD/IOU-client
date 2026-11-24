@@ -9,10 +9,18 @@ const proximamente = <EstadoVacio texto="Llega en la próxima versión." />;
  * Secciones del grupo (design.md 5): control segmentado. En mobile queda fijo bajo la barra,
  * con el nombre del grupo para no perder de vista dónde estás. Cambian sin animación (8).
  */
-export function GrupoTabs({ nombre, miembros }: { nombre: string; miembros: ReactNode }) {
+export function GrupoTabs({
+  nombre,
+  gastos,
+  miembros,
+}: {
+  nombre: string;
+  gastos: ReactNode;
+  miembros: ReactNode;
+}) {
   const [tab, setTab] = usePestaña();
   const contenido: Record<Pestaña, ReactNode> = {
-    gastos: proximamente,
+    gastos,
     balances: proximamente,
     pagos: proximamente,
     miembros,
