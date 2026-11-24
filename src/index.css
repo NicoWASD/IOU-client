@@ -22,6 +22,15 @@
   --debes: #c2303b;
   --resaltador: #ffe45c;
   --skeleton: #e7eaf0;
+  /* Avatares (design.md 4): tonos desaturados, sin violeta */
+  --av1: #d6e8f5;
+  --av2: #f5e1cf;
+  --av3: #d9eedc;
+  --av4: #f3d6df;
+  --av5: #e2e4d3;
+  --av6: #e6e3da;
+  --av-ink: #2a2d36;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
@@ -36,6 +45,13 @@
     --te-deben: #4fd1a1;
     --debes: #ff7a84;
     --skeleton: #252933;
+    --av1: #263b4c;
+    --av2: #4a3626;
+    --av3: #27402d;
+    --av4: #4a2834;
+    --av5: #3b3d2a;
+    --av6: #3a3832;
+    --av-ink: #e8eaf0;
     color-scheme: dark;
   }
 }
@@ -51,6 +67,13 @@
   --te-deben: #4fd1a1;
   --debes: #ff7a84;
   --skeleton: #252933;
+  --av1: #263b4c;
+  --av2: #4a3626;
+  --av3: #27402d;
+  --av4: #4a2834;
+  --av5: #3b3d2a;
+  --av6: #3a3832;
+  --av-ink: #e8eaf0;
   color-scheme: dark;
 }
 
@@ -105,6 +128,10 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+  ::selection {
+    background: var(--birome-soft);
+    color: var(--graphite);
+  }
   :focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
@@ -154,6 +181,141 @@
   .vale-caer {
     animation: vale-caer 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
+
+  /* Talón que salda: el botón ocupa el talón entero (área táctil >= 44 px) */
+  .vale-talon--accion {
+    padding: 6px 14px 6px 8px;
+  }
+  .vale-saldar {
+    display: grid;
+    justify-items: end;
+    align-content: center;
+    gap: 2px;
+    min-height: 48px;
+    height: 100%;
+    padding: 4px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+      background-color 160ms ease,
+      transform 160ms var(--ease-out);
+  }
+  .vale-saldar:focus-visible {
+    outline-offset: -2px;
+  }
+  .vale-saldar:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .vale-saldar:hover:not(:disabled) {
+      background: var(--birome-soft);
+    }
+  }
+
+  /* Vale compacto: para paneles angostos (el panel de cuentas del ejemplo) */
+  .vale--compacto .vale-cuerpo {
+    padding: 12px 10px 12px 20px;
+  }
+  .vale--compacto .vale-talon {
+    min-width: 0;
+  }
+  .vale--compacto .vale-talon--accion {
+    padding: 4px 10px 4px 4px;
+  }
+
+  /* El corte por el troquel (design.md 8): las dos mitades se separan, rotan y se desvanecen */
+  .vale-cortar .vale-cuerpo {
+    transform-origin: 100% 100%;
+    animation: vale-cortar-cuerpo 400ms var(--ease-out) forwards;
+  }
+  .vale-cortar .vale-talon {
+    transform-origin: 0 100%;
+    animation: vale-cortar-talon 400ms var(--ease-out) forwards;
+  }
+
+  /* El hueco que deja un vale cortado se cierra sin saltos */
+  .vale-hueco {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 220ms var(--ease-out);
+  }
+  .vale-hueco > * {
+    min-height: 0;
+  }
+  .vale-hueco[data-cerrado='true'] {
+    grid-template-rows: 0fr;
+  }
+
+  /* Subrayado de resaltador: solo para "saldado" (design.md 2) */
+  .saldado {
+    background: linear-gradient(
+      transparent 55%,
+      var(--resaltador) 55%,
+      var(--resaltador) 90%,
+      transparent 90%
+    );
+    padding: 0 2px;
+    /* el resaltador es claro en los dos temas: la tinta siempre oscura */
+    color: #1b1e25;
+  }
+  /* En oscuro, el trazo cubre toda la letra para que la tinta oscura se lea */
+  .dark .saldado {
+    background: var(--resaltador);
+    border-radius: 2px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not(.light) .saldado {
+      background: var(--resaltador);
+      border-radius: 2px;
+    }
+  }
+
+  .av {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    border-radius: 9999px;
+    font-weight: 700;
+    color: var(--av-ink);
+  }
+
+  /* Respuesta al presionar (emil-design-eng): botones y links con forma de botón */
+  .presionable {
+    transition:
+      color 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      transform 160ms var(--ease-out);
+  }
+  .presionable:active {
+    transform: scale(0.97);
+  }
+
+  /* Links de texto: el subrayado se dibuja al pasar el mouse */
+  .link-subrayado {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 200ms var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .link-subrayado:hover {
+      background-size: 100% 1px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vale-caer,
+    .vale-cortar .vale-cuerpo,
+    .vale-cortar .vale-talon {
+      animation-name: vale-fundido;
+    }
+    .vale-hueco {
+      transition: none;
+    }
+    .presionable:active,
+    .vale-saldar:active:not(:disabled) {
+      transform: none;
+    }
+  }
 }
 
 @keyframes vale-caer {
@@ -183,51 +345,6 @@
   from {
     opacity: 0;
     scale: 0.96;
-  }
-}
-
-/* Avatares (design.md 4): 6 tonos desaturados que no compiten con teDeben y debes. */
-:root {
-  --av1: #e4d8f3;
-  --av2: #d6e8f5;
-  --av3: #f5e1cf;
-  --av4: #d9eedc;
-  --av5: #f3d6df;
-  --av6: #e2e4d3;
-  --av-ink: #2a2d36;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --av1: #3b3250;
-    --av2: #263b4c;
-    --av3: #4a3626;
-    --av4: #27402d;
-    --av5: #4a2834;
-    --av6: #3b3d2a;
-    --av-ink: #e8eaf0;
-  }
-}
-.dark {
-  --av1: #3b3250;
-  --av2: #263b4c;
-  --av3: #4a3626;
-  --av4: #27402d;
-  --av5: #4a2834;
-  --av6: #3b3d2a;
-  --av-ink: #e8eaf0;
-}
-
-/* "Saldado": subrayado de resaltador (design.md 2). Único uso del amarillo. */
-@layer components {
-  .saldado {
-    background: linear-gradient(
-      transparent 55%,
-      var(--resaltador) 55%,
-      var(--resaltador) 90%,
-      transparent 90%
-    );
-    color: var(--graphite);
-    padding: 0 2px;
   }
 }
 
@@ -276,4 +393,22 @@
   background: var(--resaltador);
   color: #1b1e25;
   border-radius: 2px;
+}
+
+@keyframes vale-cortar-cuerpo {
+  to {
+    transform: translate(-8px, 4px) rotate(-3deg);
+    opacity: 0;
+  }
+}
+@keyframes vale-cortar-talon {
+  to {
+    transform: translate(8px, 4px) rotate(3deg);
+    opacity: 0;
+  }
+}
+@keyframes vale-fundido {
+  from {
+    opacity: 0;
+  }
 }
