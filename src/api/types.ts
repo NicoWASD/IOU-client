@@ -42,3 +42,44 @@ export type CodigoErrorH2 =
   | 'SALDO_PENDIENTE'
   | 'ADMIN_NO_PUEDE_SALIR'
   | 'GRUPO_ARCHIVADO';
+
+// H3 · Gastos
+export type TipoDivision = 'IGUAL' | 'MONTOS' | 'PORCENTAJE';
+
+export type Participacion = { usuario: UsuarioRef; monto: Money; porcentaje: string | null };
+
+export type GastoResumen = {
+  id: string;
+  descripcion: string;
+  monto: Money;
+  fecha: string; // YYYY-MM-DD
+  tipoDivision: TipoDivision;
+  pagadoPor: UsuarioRef;
+  miParte: Money; // "0.00" si no participo
+};
+
+export type GastoDetalle = GastoResumen & {
+  creadoPor: UsuarioRef;
+  participaciones: Participacion[];
+  puedeEditar: boolean;
+  createdAt: string;
+};
+
+export type PaginaGastos = {
+  gastos: GastoResumen[];
+  page: number;
+  pageSize: number;
+  total: number;
+};
+
+export type NuevoGasto = {
+  descripcion: string;
+  monto: Money;
+  fecha: string;
+  pagadoPor: string;
+  tipoDivision: TipoDivision;
+  participantes:
+    | { usuarioId: string }[]
+    | { usuarioId: string; monto: Money }[]
+    | { usuarioId: string; porcentaje: string }[];
+};
