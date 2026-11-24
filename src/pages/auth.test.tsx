@@ -13,7 +13,8 @@ afterEach(() => {
 const ok = { token: 't-nuevo', usuario: usuarioDemo };
 
 async function completarRegistro(password = 'secreta123') {
-  await userEvent.type(screen.getByLabelText('Nombre'), 'Sofía');
+  // La pantalla se carga lazy: se espera a que aparezca
+  await userEvent.type(await screen.findByLabelText('Nombre'), 'Sofía');
   await userEvent.type(screen.getByLabelText('Email'), 'sofi@mail.com');
   await userEvent.type(screen.getByLabelText('Contraseña'), password);
   await userEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
@@ -65,7 +66,7 @@ describe('Registro', () => {
 
 describe('Ingreso', () => {
   async function ingresar(password = 'secreta123') {
-    await userEvent.type(screen.getByLabelText('Email'), 'sofi@mail.com');
+    await userEvent.type(await screen.findByLabelText('Email'), 'sofi@mail.com');
     await userEvent.type(screen.getByLabelText('Contraseña'), password);
     await userEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
   }
