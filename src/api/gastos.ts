@@ -83,3 +83,23 @@ export function useEliminarGasto(grupoId: string) {
     },
   });
 }
+
+/** El body para volver a cargar un gasto tal como estaba (Deshacer de "Gasto eliminado"). */
+export function aNuevoGasto(g: GastoDetalle): NuevoGasto {
+  const base = {
+    descripcion: g.descripcion,
+    monto: g.monto,
+    fecha: g.fecha,
+    pagadoPor: g.pagadoPor.id,
+    tipoDivision: g.tipoDivision,
+  };
+  const ps = g.participaciones;
+  if (g.tipoDivision === 'MONTOS')
+    return { ...base, participantes: ps.map((p) => ({ usuarioId: p.usuario.id, monto: p.monto })) };
+  if (g.tipoDivision === 'PORCENTAJE')
+    return {
+      ...base,
+      participantes: ps.map((p) => ({ usuarioId: p.usuario.id, porcentaje: p.porcentaje ?? '0' })),
+    };
+  return { ...base, participantes: ps.map((p) => ({ usuarioId: p.usuario.id })) };
+}
