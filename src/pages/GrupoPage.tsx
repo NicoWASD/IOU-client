@@ -157,12 +157,16 @@ export function GrupoPage() {
   // Un refetch fallido por red o 5xx con datos ya cargados no tapa la pantalla.
   if (grupo.isError && !grupo.data) {
     return (
-      <ErrorCarga
-        error={grupo.error}
-        que="el grupo"
-        onReintentar={() => void grupo.refetch()}
-        reintentando={grupo.isFetching}
-      />
+      <div className="grid gap-4">
+        {/* M4: toda pantalla tiene su h1, también la de error */}
+        <h1 className="sr-only">No pudimos cargar el grupo</h1>
+        <ErrorCarga
+          error={grupo.error}
+          que="el grupo"
+          onReintentar={() => void grupo.refetch()}
+          reintentando={grupo.isFetching}
+        />
+      </div>
     );
   }
 

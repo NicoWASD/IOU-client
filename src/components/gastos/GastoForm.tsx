@@ -2,7 +2,7 @@ import { Loader2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { ApiError } from '@/api/client';
-import { useGuardarGasto } from '@/api/gastos';
+import { useEliminarGasto, useGuardarGasto } from '@/api/gastos';
 import type { GastoDetalle, GrupoDetalle, NuevoGasto, TipoDivision } from '@/api/types';
 import { useAuth } from '@/auth/AuthProvider';
 import { Avatar } from '@/components/Avatar';
@@ -81,6 +81,7 @@ function GastoForm({
   const { usuario } = useAuth();
   const activos = grupo.miembros.filter((m) => m.activo);
   const guardar = useGuardarGasto(grupo.id, gasto?.id);
+  const eliminar = useEliminarGasto(grupo.id);
 
   const parteDe = (id: string) => gasto?.participaciones.find((p) => p.usuario.id === id);
   const [montoTxt, setMontoTxt] = useState(
@@ -163,7 +164,7 @@ function GastoForm({
     if (Object.keys(errs).length > 0 || !listo || total === null) return;
     onEnviando(true);
     try {
-      await guardar.mutateAsync({
+      const guardado = await guardar.mutateAsync({
         descripcion: descripcion.trim(),
         monto: centsToMoney(total),
         fecha,
@@ -171,7 +172,12 @@ function GastoForm({
         tipoDivision: tipo,
         participantes,
       });
-      toast.success(gasto ? 'Gasto actualizado' : 'Gasto guardado');
+      if (gasto) toast.success('Gasto actualizado');
+      // design.md 7.4: "Gasto guardado" con Deshacer (lo elimina)
+      else
+        toast.success('Gasto guardado', {
+          action: { label: 'Deshacer', onClick: () => eliminar.mutate(guardado.id) },
+        });
       onListo();
     } catch (err) {
       if (err instanceof ApiError && err.code === 'VALIDATION_ERROR' && err.details) {

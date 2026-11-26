@@ -142,7 +142,7 @@ export function BalancesTab({ grupo }: { grupo: GrupoDetalle }) {
                   ? {}
                   : {
                       onSaldar: () => setPago({ de: t.de.id, a: t.a.id, monto: t.monto }),
-                      saldarLabel: 'Registrar este pago',
+                      saldarLabel: `Saldar: registrar el pago de ${nombre(t.de)} a ${nombre(t.a)}`,
                     })}
               />
             ))}

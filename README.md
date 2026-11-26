@@ -4,7 +4,7 @@ Frontend de **IOU** ("I owe you"), una app web para registrar gastos compartidos
 
 [![CI](https://github.com/NicoWASD/IOU-client/actions/workflows/ci.yml/badge.svg)](https://github.com/NicoWASD/IOU-client/actions/workflows/ci.yml)
 
-> Hito actual: **H0 · Fundaciones** completo. Siguiente: H1 · Landing y autenticación.
+> Estado: **H0 a H5 completos** (todas las historias del MVP). Detalle en el [informe de QA](https://github.com/NicoWASD/IOU-backend/blob/main/docs/qa.md).
 
 ## Links
 
@@ -15,6 +15,35 @@ Frontend de **IOU** ("I owe you"), una app web para registrar gastos compartidos
 | Repo del backend | [IOU-backend](https://github.com/NicoWASD/IOU-backend) |
 
 > **Aviso:** la API corre en el plan gratuito de Render, que se duerme tras 15 minutos sin uso. La primera carga puede tardar hasta un minuto; la app muestra "Despertando el servidor…" mientras tanto.
+
+## Probalo
+
+Entrá a **https://iou-client.vercel.app** con el usuario demo:
+
+| Email | Contraseña |
+|---|---|
+| `ana.demo@iou.test` | `demo-iou-2026` |
+
+También existen `bruno.demo@iou.test` y `carla.demo@iou.test` (misma contraseña). Tienen dos grupos, "Viaje a Bariloche" y "Depto compartido", con gastos de los tres tipos y pagos. Son cuentas públicas de demostración: no guardes datos reales.
+
+## Qué hace
+
+- **Grupos:** crear, editar, sumar miembros por email y quitarlos.
+- **Gastos:** en partes iguales, por montos o por porcentajes, con la suma en vivo; editar, eliminar y Deshacer.
+- **Balances:** quién debe y a quién le deben, y la liquidación con la menor cantidad de transferencias.
+- **Pagos:** registrar (también desde un vale de la liquidación), ver el historial y eliminar.
+- **Archivar** un grupo cuando están todos a mano: queda en solo lectura.
+
+## Arquitectura
+
+```
+src/pages        pantallas (rutas con carga diferida)
+src/components   UI por dominio (grupos, gastos, balances) y shadcn/ui
+src/api          cliente HTTP y hooks de TanStack Query por recurso
+src/lib          dinero en centavos (money.ts), fechas y utilidades
+```
+
+El dinero se maneja en centavos y solo se formatea al mostrarlo (`$ 1.234,56`). Las reglas de negocio se validan en el back; el front solo anticipa errores para la experiencia de uso.
 
 ## Documentación
 

@@ -187,7 +187,7 @@ describe('Quitar del grupo (admin)', () => {
   });
 
   it('409 SALDO_PENDIENTE → el mensaje de la API queda en el diálogo (CA-11.2)', async () => {
-    const message = 'No se puede quitar: tiene saldo pendiente de $ 3.200';
+    const message = 'No se puede quitar a Tomi: tiene saldo pendiente de $ 3.200';
     mockMiembros(grupoBariloche, {
       'DELETE /grupos/g1/miembros/u2': () =>
         error('SALDO_PENDIENTE', message, 409, { saldo: '-3200.00' }),

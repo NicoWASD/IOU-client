@@ -191,7 +191,7 @@ describe('mutaciones (Review Focus 5)', () => {
           {
             error: {
               code: 'SALDO_PENDIENTE',
-              message: 'No se puede quitar: tiene saldo pendiente de $ 3.200',
+              message: 'No se puede quitar a Tomi: tiene saldo pendiente de $ 3.200',
               details: { saldo: '-3200.00' },
             },
           },

@@ -2,7 +2,7 @@ import { Loader2, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ApiError } from '@/api/client';
-import { useEliminarGasto, useGasto } from '@/api/gastos';
+import { aNuevoGasto, useEliminarGasto, useGasto, useGuardarGasto } from '@/api/gastos';
 import type { GrupoDetalle, TipoDivision } from '@/api/types';
 import { useAuth } from '@/auth/AuthProvider';
 import { Avatar } from '@/components/Avatar';
@@ -40,6 +40,7 @@ export function GastoDetalleDialog({ grupo, gastoId, onClose }: Props) {
   const gasto = useGasto(grupo.id, gastoId);
   const { usuario } = useAuth();
   const eliminar = useEliminarGasto(grupo.id);
+  const recrear = useGuardarGasto(grupo.id);
   const [editando, setEditando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,10 +49,16 @@ export function GastoDetalleDialog({ grupo, gastoId, onClose }: Props) {
     if (!gastoId) return;
     setError(null);
     try {
+      const borrado = gasto.data;
       await eliminar.mutateAsync(gastoId);
       setConfirmando(false);
       onClose();
-      toast.success('Gasto eliminado');
+      // Deshacer lo vuelve a cargar con los mismos datos (queda con otro id)
+      toast.success('Gasto eliminado', {
+        ...(borrado && {
+          action: { label: 'Deshacer', onClick: () => recrear.mutate(aNuevoGasto(borrado)) },
+        }),
+      });
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : 'No pudimos eliminar el gasto. Probá de nuevo.',
