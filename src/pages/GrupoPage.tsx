@@ -8,6 +8,8 @@ import type { GrupoDetalle } from '@/api/types';
 import { AvatarPila } from '@/components/Avatar';
 import { Cargando, ErrorCarga } from '@/components/estados/Estados';
 import { EditarGrupoDialog } from '@/components/grupos/EditarGrupoDialog';
+import { BalancesTab } from '@/components/balances/BalancesTab';
+import { PagosTab } from '@/components/balances/PagosTab';
 import { GastosTab } from '@/components/gastos/GastosTab';
 import { GrupoTabs } from '@/components/grupos/GrupoTabs';
 import { MiembrosTab } from '@/components/grupos/MiembrosTab';
@@ -170,6 +172,8 @@ export function GrupoPage() {
       <GrupoTabs
         nombre={grupo.data.nombre}
         gastos={<GastosTab grupo={grupo.data} />}
+        balances={<BalancesTab grupo={grupo.data} />}
+        pagos={<PagosTab grupo={grupo.data} />}
         miembros={<MiembrosTab grupo={grupo.data} />}
       />
     </Layout>

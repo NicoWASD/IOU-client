@@ -21,6 +21,20 @@ function mockGrupo(grupo: GrupoDetalle, extra: Parameters<typeof mockApi>[0] = {
     [`GET /grupos/${grupo.id}/miembros`]: () => jsonResponse({ miembros: grupo.miembros }),
     [`GET /grupos/${grupo.id}/gastos`]: () =>
       jsonResponse({ gastos: [], page: 1, pageSize: 20, total: 0 }),
+    [`GET /grupos/${grupo.id}/balances`]: () =>
+      jsonResponse({
+        balances: [
+          { usuario: { id: 'u1', nombre: 'Sofía' }, balance: '200.00' },
+          { usuario: { id: 'u2', nombre: 'Tomi' }, balance: '-200.00' },
+        ],
+      }),
+    [`GET /grupos/${grupo.id}/liquidacion`]: () =>
+      jsonResponse({
+        transferencias: [
+          { de: { id: 'u2', nombre: 'Tomi' }, a: { id: 'u1', nombre: 'Sofía' }, monto: '200.00' },
+        ],
+      }),
+    [`GET /grupos/${grupo.id}/pagos`]: () => jsonResponse({ pagos: [] }),
     ...extra,
   });
 }
@@ -43,15 +57,18 @@ describe('Detalle del grupo', () => {
     expect(pestañas.getByRole('tab', { name: 'Gastos' })).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('Gastos arranca vacía; Balances y Pagos llegan en la próxima versión', async () => {
+  it('Gastos vacía, Balances con la liquidación (CA-19.3, CA-21.1) y Pagos vacía', async () => {
     mockGrupo(grupoBariloche);
     const { router } = renderApp('/grupos/g1');
     expect(await screen.findByText(/Sin gastos todavía/)).toBeVisible();
     await userEvent.click(screen.getByRole('tab', { name: 'Balances' }));
-    expect(screen.getByRole('tabpanel')).toHaveTextContent('Llega en la próxima versión');
+    const panel = await screen.findByRole('tabpanel');
+    expect(await within(panel).findByText('Tomi → Vos')).toBeVisible();
+    expect(panel).toHaveTextContent('Le deben');
+    expect(panel).toHaveTextContent('Debe');
     await userEvent.click(screen.getByRole('tab', { name: 'Pagos' }));
     expect(screen.getByRole('tab', { name: 'Pagos' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tabpanel')).toHaveTextContent('Llega en la próxima versión');
+    expect(await screen.findByText(/Cuando alguien salde una deuda/)).toBeVisible();
     expect(router.state.location.search).toBe('?tab=pagos');
   });
 

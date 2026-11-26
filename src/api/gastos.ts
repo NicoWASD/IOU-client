@@ -53,7 +53,8 @@ function useInvalidarGrupo(grupoId: string) {
   const queryClient = useQueryClient();
   return () =>
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: gastoKeys.lista(grupoId) }),
+      // Prefijo del grupo: gastos, balances, liquidación y el detalle
+      queryClient.invalidateQueries({ queryKey: grupoKeys.detalle(grupoId) }),
       queryClient.invalidateQueries({ queryKey: grupoKeys.todos, exact: true }),
     ]);
 }
