@@ -1,9 +1,6 @@
 import type { ReactNode } from 'react';
-import { EstadoVacio } from '@/components/estados/Estados';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { esPestaña, PESTAÑAS, usePestaña, type Pestaña } from './pestanas';
-
-const proximamente = <EstadoVacio texto="Llega en la próxima versión." />;
 
 /**
  * Secciones del grupo (design.md 5): control segmentado. En mobile queda fijo bajo la barra,
@@ -12,17 +9,21 @@ const proximamente = <EstadoVacio texto="Llega en la próxima versión." />;
 export function GrupoTabs({
   nombre,
   gastos,
+  balances,
+  pagos,
   miembros,
 }: {
   nombre: string;
   gastos: ReactNode;
+  balances: ReactNode;
+  pagos: ReactNode;
   miembros: ReactNode;
 }) {
   const [tab, setTab] = usePestaña();
   const contenido: Record<Pestaña, ReactNode> = {
     gastos,
-    balances: proximamente,
-    pagos: proximamente,
+    balances,
+    pagos,
     miembros,
   };
 

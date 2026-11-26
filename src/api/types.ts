@@ -83,3 +83,17 @@ export type NuevoGasto = {
     | { usuarioId: string; monto: Money }[]
     | { usuarioId: string; porcentaje: string }[];
 };
+
+// H4 · Balances y pagos
+export type Balance = { usuario: UsuarioRef; balance: Money }; // > 0: le deben · < 0: debe
+export type Transferencia = { de: UsuarioRef; a: UsuarioRef; monto: Money };
+export type Pago = {
+  id: string;
+  de: UsuarioRef;
+  a: UsuarioRef;
+  monto: Money;
+  fecha: string;
+  creadoPor: UsuarioRef;
+  puedeEliminar: boolean;
+};
+export type NuevoPago = { de: string; a: string; monto: Money; fecha: string };
