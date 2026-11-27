@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCargaDemorada } from '@/hooks/useCargaDemorada';
 import { cn } from '@/lib/utils';
-import { AgregarMiembroForm } from './AgregarMiembroForm';
+import { BuscadorUsuarios, InvitacionesPendientes } from './BuscadorUsuarios';
 import { QuitarMiembroDialog } from './QuitarMiembroDialog';
 
 function FilaMiembro({
@@ -113,7 +113,8 @@ export function MiembrosTab({ grupo }: { grupo: GrupoDetalle }) {
 
   return (
     <div className="grid gap-6">
-      {gestiona && <AgregarMiembroForm grupoId={grupo.id} />}
+      {gestiona && <BuscadorUsuarios grupoId={grupo.id} />}
+      {gestiona && <InvitacionesPendientes grupoId={grupo.id} />}
       <section aria-labelledby="miembros-activos" className="grid gap-3">
         <h2 id="miembros-activos" className="sr-only">
           Participan

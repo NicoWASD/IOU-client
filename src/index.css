@@ -425,3 +425,218 @@
     opacity: 0.5;
   }
 }
+
+/* H6 (design.md 13): Ticky, entrada de pantallas, guía y barra inferior */
+.ticky-ojos,
+.ticky-boca,
+.ticky-brazo-saluda,
+.ticky-brazos,
+.ticky-papel {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.ticky-parpadea .ticky-ojos,
+.ticky-camina .ticky-ojos,
+.ticky-quieto .ticky-ojos,
+.ticky-saluda .ticky-ojos,
+.ticky-sentado .ticky-ojos,
+.ticky-telefono .ticky-ojos {
+  animation: ticky-parpadeo 4s infinite;
+}
+.ticky-quieto .ticky-cuerpo,
+.ticky-sentado .ticky-cuerpo {
+  animation: ticky-flotar 2.4s ease-in-out infinite;
+}
+.ticky-camina {
+  animation: ticky-caminar 6s ease-in-out infinite;
+}
+.ticky-camina .ticky-cuerpo {
+  animation: ticky-paso 0.4s steps(2) infinite;
+}
+/* En la guía camina de un botón al otro: solo el paso, sin el vaivén */
+.ticky-tour .ticky-camina {
+  animation: none;
+}
+.ticky-festeja .ticky-cuerpo {
+  animation: ticky-salto 0.9s var(--ease-out) 2;
+}
+.ticky-festeja .ticky-brazos {
+  animation: ticky-paso 0.3s steps(2) infinite;
+}
+.ticky-brazo-saluda {
+  transform-origin: bottom left;
+  animation: ticky-saludo 0.6s ease-in-out 4 alternate;
+}
+.ticky-leyendo .ticky-ojos {
+  animation: ticky-leer 2.4s steps(4) infinite;
+}
+.ticky-leyendo .ticky-papel {
+  animation: ticky-paso 1.2s steps(2) infinite;
+}
+.ticky-telefono .ticky-boca {
+  animation: ticky-hablar 0.5s steps(2) infinite;
+}
+.ticky-cosquillas .ticky-cuerpo {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: ticky-cosquillas 0.16s linear 6 alternate;
+}
+.ticky-globo {
+  animation: ticky-globo 220ms var(--ease-out) both;
+}
+@keyframes ticky-parpadeo {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes ticky-flotar {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes ticky-paso {
+  50% {
+    transform: translateY(-2px);
+  }
+}
+@keyframes ticky-caminar {
+  0%,
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+  45% {
+    transform: translateX(48px) scaleX(1);
+  }
+  50% {
+    transform: translateX(48px) scaleX(-1);
+  }
+  95% {
+    transform: translateX(0) scaleX(-1);
+  }
+}
+@keyframes ticky-salto {
+  30% {
+    transform: translateY(-14px);
+  }
+  55% {
+    transform: translateY(0);
+  }
+  70% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes ticky-saludo {
+  to {
+    transform: rotate(18deg);
+  }
+}
+@keyframes ticky-leer {
+  0%,
+  100% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+@keyframes ticky-hablar {
+  50% {
+    transform: scaleY(2.2);
+  }
+}
+@keyframes ticky-cosquillas {
+  from {
+    transform: rotate(-7deg) scale(1.04, 0.94);
+  }
+  to {
+    transform: rotate(7deg) scale(0.96, 1.05);
+  }
+}
+@keyframes ticky-globo {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+}
+
+/* Ticky se asoma desde un borde y se va por el mismo */
+.ticky-desde-izq {
+  animation: ticky-izq 520ms var(--ease-out) both;
+}
+.ticky-desde-der {
+  animation: ticky-der 520ms var(--ease-out) both;
+}
+.ticky-desde-abajo {
+  animation: ticky-abajo 520ms var(--ease-out) both;
+}
+.ticky-hacia-izq {
+  animation: ticky-izq-sale 380ms ease-in both;
+}
+.ticky-hacia-der {
+  animation: ticky-der-sale 380ms ease-in both;
+}
+.ticky-hacia-abajo {
+  animation: ticky-abajo-sale 380ms ease-in both;
+}
+@keyframes ticky-izq {
+  from {
+    transform: translateX(-110%);
+  }
+}
+@keyframes ticky-der {
+  from {
+    transform: translateX(110%);
+  }
+}
+@keyframes ticky-izq-sale {
+  to {
+    transform: translateX(-110%);
+  }
+}
+@keyframes ticky-der-sale {
+  to {
+    transform: translateX(110%);
+  }
+}
+@keyframes ticky-abajo-sale {
+  to {
+    transform: translateY(140%);
+    opacity: 0;
+  }
+}
+@keyframes ticky-abajo {
+  from {
+    transform: translateY(140%);
+    opacity: 0;
+  }
+}
+
+.pantalla-entra {
+  animation: pantalla-entrar 180ms var(--ease-out);
+}
+@keyframes pantalla-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticky *,
+  .ticky,
+  [class*='ticky-desde-'],
+  .ticky-globo {
+    animation: none !important;
+  }
+  [class*='ticky-hacia-'] {
+    animation: vale-fundido 200ms ease-in reverse both !important;
+  }
+  .pantalla-entra {
+    animation: vale-fundido 120ms ease-out;
+  }
+}

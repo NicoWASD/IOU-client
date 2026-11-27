@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { esErrorDelCliente } from '@/api/client';
+import { aplicarTema, temaGuardado } from '@/lib/tema';
 import { routes } from './router';
 import './index.css';
 
@@ -14,6 +15,8 @@ const queryClient = new QueryClient({
   },
 });
 const router = createBrowserRouter(routes);
+// Antes del primer render, para que no parpadee el tema (HU-36)
+aplicarTema(temaGuardado(), false);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -1,4 +1,4 @@
-import { Archive, Pencil } from 'lucide-react';
+import { Archive, ArrowLeft, Pencil } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
@@ -96,6 +96,12 @@ function Encabezado({ grupo }: { grupo: GrupoDetalle }) {
 
   return (
     <header className="grid gap-3">
+      <Button asChild variant="ghost" className="-ml-3 h-11 justify-self-start text-pencil">
+        <Link to="/grupos">
+          <ArrowLeft aria-hidden="true" />
+          Mis grupos
+        </Link>
+      </Button>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="grid min-w-0 gap-1">
           <h1

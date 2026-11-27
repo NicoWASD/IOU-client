@@ -38,7 +38,7 @@ export function GrupoTabs({
         </p>
         <TabsList aria-label="Secciones del grupo" className="w-full md:w-fit">
           {PESTAÑAS.map((p) => (
-            <TabsTrigger key={p.id} value={p.id}>
+            <TabsTrigger key={p.id} value={p.id} data-tour={`tab-${p.id}`}>
               {p.label}
             </TabsTrigger>
           ))}

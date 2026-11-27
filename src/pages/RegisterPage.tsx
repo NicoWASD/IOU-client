@@ -8,13 +8,13 @@ import { Field } from '@/components/forms/Field';
 import { Button } from '@/components/ui/button';
 import { fieldErrors, registerSchema, type FieldErrors } from '@/schemas/auth';
 
-type Campo = 'nombre' | 'email' | 'password';
+type Campo = 'usuario' | 'email' | 'password';
 
 export function RegisterPage() {
   const { status, register } = useAuth();
   const navigate = useNavigate();
   const destino = useDestinoPostLogin();
-  const [form, setForm] = useState({ nombre: '', email: '', password: '' });
+  const [form, setForm] = useState({ usuario: '', email: '', password: '' });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -29,11 +29,17 @@ export function RegisterPage() {
     if (invalid) return;
     setEnviando(true);
     try {
-      await register(form.nombre.trim(), form.email.trim(), form.password);
+      await register(
+        form.usuario.trim().toLowerCase().replace(/^@/, ''),
+        form.email.trim(),
+        form.password,
+      );
       await navigate(destino, { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.code === 'EMAIL_EN_USO') {
         setErrors({ email: err.message });
+      } else if (err instanceof ApiError && err.code === 'USUARIO_EN_USO') {
+        setErrors({ usuario: err.message });
       } else if (err instanceof ApiError && err.details) {
         setErrors(err.details);
       } else {
@@ -61,12 +67,16 @@ export function RegisterPage() {
           </p>
         )}
         <Field
-          id="nombre"
-          label="Nombre"
-          autoComplete="name"
-          value={form.nombre}
-          onChange={set('nombre')}
-          error={errors.nombre}
+          id="usuario"
+          label="Nombre de usuario"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
+          placeholder="@tu.usuario"
+          hint="Así te encuentran para invitarte. Letras, números, punto o guion bajo."
+          value={form.usuario}
+          onChange={set('usuario')}
+          error={errors.usuario}
         />
         <Field
           id="email"

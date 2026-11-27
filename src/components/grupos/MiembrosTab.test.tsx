@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { GrupoDetalle, Miembro } from '@/api/types';
+import type { GrupoDetalle } from '@/api/types';
 import { tokenStore } from '@/auth/tokenStore';
 import { grupoBariloche, grupoDepto } from '@/test/fixtures/h2';
 import { jsonResponse, mockApi, renderApp, usuarioDemo } from '@/test/utils';
@@ -12,7 +12,6 @@ afterEach(() => {
   tokenStore.clear();
 });
 
-const lu: Miembro = { id: 'u5', nombre: 'Lu', email: 'lu@mail.com', rol: 'MIEMBRO', activo: true };
 const error = (code: string, message: string, status: number, details?: object) =>
   jsonResponse({ error: { code, message, ...(details ? { details } : {}) } }, status);
 
@@ -23,6 +22,7 @@ function mockMiembros(grupo: GrupoDetalle, extra: Parameters<typeof mockApi>[0] 
     'GET /auth/me': () => jsonResponse({ usuario: usuarioDemo }),
     [`GET /grupos/${grupo.id}`]: () => jsonResponse({ grupo: { ...grupo, ...estado } }),
     [`GET /grupos/${grupo.id}/miembros`]: () => jsonResponse({ miembros: estado.miembros }),
+    [`GET /grupos/${grupo.id}/invitaciones`]: () => jsonResponse({ invitaciones: [] }),
     ...extra,
   });
   return { fetchMock, estado };
@@ -46,54 +46,27 @@ describe('Lista de miembros', () => {
   });
 });
 
-describe('Agregar por email (admin)', () => {
-  it('agrega, limpia el campo y avisa "Lu se sumó al grupo" (CA-10.1)', async () => {
-    const { fetchMock, estado } = mockMiembros(grupoBariloche, {
-      'POST /grupos/g1/miembros': () => {
-        estado.miembros = [...estado.miembros, lu];
-        return jsonResponse({ miembro: lu }, 201);
-      },
+describe('Invitar por @usuario (admin, HU-32)', () => {
+  it('busca mientras se escribe, sin mails, e invita al elegir', async () => {
+    const { fetchMock } = mockMiembros(grupoBariloche, {
+      'GET /usuarios/buscar': () =>
+        jsonResponse({ usuarios: [{ id: 'u5', nombre: 'Lu', usuario: 'lu.paz' }] }),
+      'POST /grupos/g1/invitaciones': () => jsonResponse({ invitacion: { id: 'i1' } }, 201),
     });
     abrir(grupoBariloche);
     const p = await panel();
-    const campo = within(p).getByLabelText('Agregar por email');
-    await userEvent.type(campo, '  lu@mail.com ');
-    await userEvent.click(within(p).getByRole('button', { name: 'Agregar' }));
-    expect(await screen.findByText('Lu se sumó al grupo')).toBeInTheDocument();
-    expect(campo).toHaveValue('');
-    expect(await within(p).findByText('lu@mail.com')).toBeVisible();
-    const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
-    expect(JSON.parse(String(post?.[1]?.body))).toEqual({ email: 'lu@mail.com' });
-  });
-
-  it.each([
-    ['USUARIO_NO_ENCONTRADO', 'No existe un usuario con ese email', 404, 'CA-10.2'],
-    ['YA_ES_MIEMBRO', 'Ya es miembro del grupo', 409, 'CA-10.3'],
-  ])('%s → el mensaje debajo del campo (%s)', async (code, message, status) => {
-    mockMiembros(grupoBariloche, {
-      'POST /grupos/g1/miembros': () => error(code, message, status),
+    await userEvent.type(within(p).getByRole('combobox', { name: 'Invitar por @usuario' }), 'l');
+    expect(within(p).queryByRole('listbox')).not.toBeInTheDocument();
+    await userEvent.type(within(p).getByRole('combobox'), 'u');
+    const opcion = await within(p).findByRole('option', { name: /Lu.*@lu\.paz/ });
+    const busqueda = fetchMock.mock.calls.find(([u]) => String(u).includes('/usuarios/buscar'));
+    expect(String(busqueda?.[0])).toContain('q=lu');
+    await userEvent.click(opcion);
+    await waitFor(() => {
+      const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
+      expect(JSON.parse(String(post?.[1]?.body))).toEqual({ usuarioId: 'u5' });
     });
-    abrir(grupoBariloche);
-    const p = await panel();
-    const campo = within(p).getByLabelText('Agregar por email');
-    await userEvent.type(campo, 'tomi@mail.com');
-    await userEvent.click(within(p).getByRole('button', { name: 'Agregar' }));
-    const msg = await within(p).findByText(message);
-    expect(campo).toHaveAttribute('aria-invalid', 'true');
-    expect(campo.getAttribute('aria-describedby')).toContain(msg.id);
-    expect(campo).toHaveValue('tomi@mail.com');
-  });
-
-  it('email vacío o inválido → error en el campo, sin llamar a la API', async () => {
-    const { fetchMock } = mockMiembros(grupoBariloche);
-    abrir(grupoBariloche);
-    const p = await panel();
-    await userEvent.click(within(p).getByRole('button', { name: 'Agregar' }));
-    expect(await within(p).findByText('Ingresá el email de la persona')).toBeVisible();
-    await userEvent.type(within(p).getByLabelText('Agregar por email'), 'tomi@');
-    await userEvent.click(within(p).getByRole('button', { name: 'Agregar' }));
-    expect(await within(p).findByText('El email no es válido')).toBeVisible();
-    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+    expect((await screen.findAllByText(/Invitamos a @lu\.paz/)).length).toBeGreaterThan(0);
   });
 });
 
@@ -153,28 +126,6 @@ describe('Quitar del grupo (admin)', () => {
     );
   });
 
-  it('al agregar, la persona aparece con la respuesta del POST sin esperar los refetch', async () => {
-    let lento = false;
-    mockMiembros(grupoBariloche, {
-      'GET /grupos/g1/miembros': () =>
-        lento
-          ? new Promise<Response>(() => {})
-          : jsonResponse({ miembros: grupoBariloche.miembros }),
-      'GET /grupos/g1': () =>
-        lento ? new Promise<Response>(() => {}) : jsonResponse({ grupo: grupoBariloche }),
-      'POST /grupos/g1/miembros': () => {
-        lento = true;
-        return jsonResponse({ miembro: lu }, 201);
-      },
-    });
-    abrir(grupoBariloche);
-    const p = await panel();
-    await userEvent.type(within(p).getByLabelText('Agregar por email'), 'lu@mail.com');
-    await userEvent.click(within(p).getByRole('button', { name: 'Agregar' }));
-    expect((await screen.findAllByText('Lu se sumó al grupo')).length).toBeGreaterThan(0);
-    expect(within(p).getByText('lu@mail.com')).toBeVisible();
-  });
-
   it('cancelar no llama a la API', async () => {
     const { fetchMock } = mockMiembros(grupoBariloche);
     abrir(grupoBariloche);
@@ -218,7 +169,7 @@ describe('Sin permisos', () => {
     abrir(grupoDepto);
     const p = await panel();
     await within(p).findByText('tomi@mail.com');
-    expect(within(p).queryByLabelText('Agregar por email')).not.toBeInTheDocument();
+    expect(within(p).queryByRole('combobox')).not.toBeInTheDocument();
     expect(within(p).queryByRole('button', { name: /^Quitar/ })).not.toBeInTheDocument();
   });
 
@@ -228,7 +179,7 @@ describe('Sin permisos', () => {
     abrir(archivado);
     const p = await panel();
     await within(p).findByText('tomi@mail.com');
-    expect(within(p).queryByLabelText('Agregar por email')).not.toBeInTheDocument();
+    expect(within(p).queryByRole('combobox')).not.toBeInTheDocument();
     expect(within(p).queryByRole('button', { name: /^Quitar/ })).not.toBeInTheDocument();
   });
 });

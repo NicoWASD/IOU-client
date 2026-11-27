@@ -1,6 +1,8 @@
 import { Loader2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
+import { alAzar } from '@/components/brand/Ticky';
+import { FRASES_PAGO, tickyDice } from '@/components/brand/tickyBus';
 import { useRegistrarPago } from '@/api/balances';
 import { ApiError } from '@/api/client';
 import type { GrupoDetalle } from '@/api/types';
@@ -11,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { hoy } from '@/lib/fechas';
 import { centsToMoney, parseMoney } from '@/lib/money';
+import { MediosDeCobro } from './MediosDeCobro';
 
 /** Precarga desde la liquidación sugerida (CA-22.4). */
 export type PagoInicial = { de: string; a: string; monto: string };
@@ -80,6 +83,9 @@ function PagoForm({
     try {
       await registrar.mutateAsync({ de, a, monto: centsToMoney(total), fecha });
       toast.success(`Pago registrado: ${nombre(de)} → ${nombre(a)}`);
+      // Ticky festeja con un halago (HU-38)
+      const receptor = a === usuario?.id ? 'Vos' : nombre(a).split(' ')[0];
+      tickyDice({ texto: alAzar(FRASES_PAGO).replaceAll('{a}', receptor ?? '') });
       onListo();
     } catch (err) {
       setError(
@@ -120,6 +126,8 @@ function PagoForm({
         onChange={(e) => setMontoTxt(e.target.value)}
         className="text-xl font-semibold tabular-nums"
       />
+      {/* HU-35: si pago yo, veo cómo transferirle a quien recibe */}
+      {de === usuario?.id && a && a !== de && <MediosDeCobro usuarioId={a} nombre={nombre(a)} />}
       <Field
         id="pago-fecha"
         label="Fecha"
