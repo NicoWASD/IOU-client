@@ -14,7 +14,7 @@ const ok = { token: 't-nuevo', usuario: usuarioDemo };
 
 async function completarRegistro(password = 'secreta123') {
   // La pantalla se carga lazy: se espera a que aparezca
-  await userEvent.type(await screen.findByLabelText('Nombre'), 'Sofía');
+  await userEvent.type(await screen.findByLabelText('Nombre de usuario'), '@Sofi');
   await userEvent.type(screen.getByLabelText('Email'), 'sofi@mail.com');
   await userEvent.type(screen.getByLabelText('Contraseña'), password);
   await userEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
@@ -28,7 +28,7 @@ describe('Registro', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/grupos'));
     expect(tokenStore.get()).toBe('t-nuevo');
     const body = JSON.parse(String((fetchMock.mock.calls[0]?.[1] as RequestInit).body));
-    expect(body).toEqual({ nombre: 'Sofía', email: 'sofi@mail.com', password: 'secreta123' });
+    expect(body).toEqual({ usuario: 'sofi', email: 'sofi@mail.com', password: 'secreta123' });
   });
 
   it('email en uso → error debajo del campo email (CA-01.2)', async () => {

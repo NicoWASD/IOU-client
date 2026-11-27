@@ -93,7 +93,7 @@ export function GrupoForm({
         onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))}
         error={errors.descripcion}
       />
-      <Button type="submit" className="mt-1 h-11" disabled={ocupado}>
+      <Button type="submit" data-tour="confirmar-grupo" className="mt-1 h-11" disabled={ocupado}>
         {ocupado && <Loader2 aria-hidden="true" className="animate-spin" />}
         {ocupado ? enviando : accion}
       </Button>

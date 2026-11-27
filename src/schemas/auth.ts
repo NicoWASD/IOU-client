@@ -9,12 +9,22 @@ const email = z
   .max(120, 'El email puede tener hasta 120 caracteres.')
   .pipe(z.email({ error: 'El email no es válido.' }));
 
+/** RN-19: 3 a 20 caracteres a-z 0-9 _ . (acepta una @ adelante). */
+export const usuarioSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .transform((s) => s.replace(/^@/, ''))
+  .pipe(
+    z
+      .string()
+      .min(3, 'El usuario tiene que tener al menos 3 caracteres.')
+      .max(20, 'El usuario puede tener hasta 20 caracteres.')
+      .regex(/^[a-z0-9_.]+$/, 'Usá solo letras, números, punto o guion bajo.'),
+  );
+
 export const registerSchema = z.object({
-  nombre: z
-    .string()
-    .trim()
-    .min(1, 'Ingresá tu nombre.')
-    .max(80, 'El nombre puede tener hasta 80 caracteres.'),
+  usuario: usuarioSchema,
   email,
   password: z
     .string()

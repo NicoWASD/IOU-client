@@ -1,6 +1,7 @@
 import { CircleAlert, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { ApiError } from '@/api/client';
+import { TickyTocable } from '@/components/brand/Ticky';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -52,7 +53,8 @@ export function EstadoVacio({
   accion?: ReactNode;
 }) {
   return (
-    <div className="grid justify-items-start gap-4 rounded-[14px] border border-dashed border-rule bg-surface p-7">
+    <div className="grid justify-items-start gap-4 overflow-hidden rounded-[14px] border border-dashed border-rule bg-surface p-7">
+      <TickyTocable pose="camina" size={44} lado="costado" />
       {firma && (
         <span className="font-firma text-3xl leading-none text-birome" aria-hidden="true">
           {firma}

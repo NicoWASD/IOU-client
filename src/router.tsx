@@ -11,7 +11,12 @@ function Root() {
     <AuthProvider>
       <Outlet />
       {/* design.md 7.7: abajo al centro en mobile, abajo a la derecha en desktop; 4 s */}
-      <Toaster position={esDesktop ? 'bottom-right' : 'bottom-center'} duration={4000} />
+      {/* En mobile, por encima de la barra inferior (design.md 13) */}
+      <Toaster
+        position={esDesktop ? 'bottom-right' : 'bottom-center'}
+        duration={4000}
+        mobileOffset={{ bottom: 'calc(80px + env(safe-area-inset-bottom))' }}
+      />
     </AuthProvider>
   );
 }
@@ -40,6 +45,18 @@ export const routes: RouteObject[] = [
               {
                 path: '/grupos',
                 lazy: async () => ({ Component: (await import('@/pages/GruposPage')).GruposPage }),
+              },
+              {
+                path: '/invitaciones',
+                lazy: async () => ({
+                  Component: (await import('@/pages/InvitacionesPage')).InvitacionesPage,
+                }),
+              },
+              {
+                path: '/configuracion',
+                lazy: async () => ({
+                  Component: (await import('@/pages/ConfiguracionPage')).ConfiguracionPage,
+                }),
               },
               {
                 path: '/grupos/:id',

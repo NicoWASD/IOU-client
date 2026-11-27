@@ -7,10 +7,9 @@ import { AuthProvider } from '@/auth/AuthProvider';
 import { authEvents } from '@/auth/events';
 import { RequireAuth } from '@/auth/RequireAuth';
 import { tokenStore } from '@/auth/tokenStore';
-import { grupoBariloche, grupoDepto, listaGrupos, tomi } from '@/test/fixtures/h2';
+import { grupoBariloche, grupoDepto, listaGrupos } from '@/test/fixtures/h2';
 import { jsonResponse, mockApi, usuarioDemo } from '@/test/utils';
 import {
-  useAgregarMiembro,
   useCrearGrupo,
   useEditarGrupo,
   useGrupo,
@@ -122,27 +121,6 @@ describe('mutaciones (Review Focus 5)', () => {
     expect(invalidada(queryClient, ['grupos', 'g1'])).toBe(true);
   });
 
-  it('useAgregarMiembro → POST /api/grupos/:id/miembros e invalida miembros, grupo y lista', async () => {
-    const fetchMock = mockApi({
-      'POST /grupos/g1/miembros': () => jsonResponse({ miembro: tomi }, 201),
-    });
-    const { queryClient, wrapper } = setup();
-    sembrar(queryClient);
-    const { result } = renderHook(() => useAgregarMiembro('g1'), { wrapper });
-    const miembro = await result.current.mutateAsync('tomi@mail.com');
-    expect(miembro).toEqual(tomi);
-    expect(llamada(fetchMock)).toMatchObject({
-      metodo: 'POST',
-      path: '/api/grupos/g1/miembros',
-      body: { email: 'tomi@mail.com' },
-    });
-    expect(invalidada(queryClient, ['grupos', 'g1', 'miembros'])).toBe(true);
-    expect(invalidada(queryClient, ['grupos', 'g1'])).toBe(true);
-    expect(invalidada(queryClient, ['grupos'])).toBe(true);
-    // No toca el detalle de otro grupo
-    expect(invalidada(queryClient, ['grupos', 'g2'])).toBe(false);
-  });
-
   it('useQuitarMiembro → DELETE /api/grupos/:id/miembros/:usuarioId (204) e invalida', async () => {
     const fetchMock = mockApi({
       'DELETE /grupos/g1/miembros/u2': () => new Response(null, { status: 204 }),
@@ -170,7 +148,6 @@ describe('mutaciones (Review Focus 5)', () => {
     mockApi({
       'DELETE /grupos/g1/miembros/u2': () =>
         jsonResponse({ error: { code, message: 'x' } }, status),
-      'POST /grupos/g1/miembros': () => jsonResponse({ error: { code, message: 'x' } }, status),
     });
     const { queryClient, wrapper } = setup();
     sembrar(queryClient);
@@ -178,10 +155,6 @@ describe('mutaciones (Review Focus 5)', () => {
     await expect(quitar.result.current.mutateAsync('u2')).rejects.toMatchObject({ code });
     expect(invalidada(queryClient, ['grupos', 'g1', 'miembros'])).toBe(true);
     expect(invalidada(queryClient, ['grupos'])).toBe(true);
-    sembrar(queryClient);
-    const agregar = renderHook(() => useAgregarMiembro('g1'), { wrapper });
-    await expect(agregar.result.current.mutateAsync('x@mail.com')).rejects.toMatchObject({ code });
-    expect(invalidada(queryClient, ['grupos', 'g1', 'miembros'])).toBe(true);
   });
 
   it('una mutación que falla no invalida nada y expone el ApiError', async () => {

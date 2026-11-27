@@ -20,7 +20,9 @@ type AuthContextValue = {
   status: AuthStatus;
   usuario: Usuario | null;
   login(email: string, password: string): Promise<void>;
-  register(nombre: string, email: string, password: string): Promise<void>;
+  register(usuario: string, email: string, password: string): Promise<void>;
+  /** Reemplaza el perfil en caché después de editarlo (HU-34). */
+  actualizarUsuario(u: Usuario): void;
   logout(): void;
   retry(): void;
   /** La sesión anterior venció o dejó de ser válida: el login lo avisa (CA-03.2). */
@@ -92,8 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       status,
       usuario: me.data ?? null,
       login: async (email, password) => iniciar(await authApi.login({ email, password })),
-      register: async (nombre, email, password) =>
-        iniciar(await authApi.register({ nombre, email, password })),
+      register: async (usuario, email, password) =>
+        iniciar(await authApi.register({ usuario, email, password })),
+      actualizarUsuario: (u) => queryClient.setQueryData(['auth', 'me', token], u),
       logout: () => {
         tokenStore.clear();
         setToken(null);

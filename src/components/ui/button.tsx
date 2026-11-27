@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { Slot } from "radix-ui"
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out outline-none active:not-disabled:scale-[0.97] motion-reduce:active:scale-100 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow,translate,scale] duration-150 ease-out outline-none hover:not-disabled:-translate-y-px active:not-disabled:translate-y-0 active:not-disabled:scale-[0.96] active:duration-75 motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 [&_svg]:transition-transform [&_svg]:duration-200 hover:[&_svg.lucide-plus]:rotate-90 hover:[&_svg.lucide-arrow-left]:-translate-x-0.5 motion-reduce:[&_svg]:transition-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

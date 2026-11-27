@@ -15,10 +15,6 @@ export const gruposApi = {
     apiRequest<{ grupo: GrupoDetalle }>('PATCH', grupoPath(id), { body }).then((r) => r.grupo),
   miembros: (id: string) =>
     apiRequest<{ miembros: Miembro[] }>('GET', `${grupoPath(id)}/miembros`).then((r) => r.miembros),
-  agregarMiembro: (id: string, email: string) =>
-    apiRequest<{ miembro: Miembro }>('POST', `${grupoPath(id)}/miembros`, {
-      body: { email },
-    }).then((r) => r.miembro),
   quitarMiembro: (id: string, usuarioId: string) =>
     apiRequest<void>('DELETE', `${grupoPath(id)}/miembros/${encodeURIComponent(usuarioId)}`),
 };
@@ -118,16 +114,6 @@ const ESTADO_VIEJO = new Set([
 function refrescarSiQuedoViejo(queryClient: QueryClient, id: string, err: unknown) {
   if (err instanceof ApiError && ESTADO_VIEJO.has(err.code))
     void invalidarMiembros(queryClient, id);
-}
-
-export function useAgregarMiembro(id: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (email: string) => gruposApi.agregarMiembro(id, email),
-    // Si estaba inactivo, el back lo reactiva (CB-14): se reemplaza en la lista
-    onSuccess: (miembro) => aplicarMiembro(queryClient, id, miembro),
-    onError: (err) => refrescarSiQuedoViejo(queryClient, id, err),
-  });
 }
 
 export function useQuitarMiembro(id: string) {

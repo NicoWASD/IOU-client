@@ -5,6 +5,7 @@ import type { GrupoResumen } from '@/api/types';
 import { Cargando, ErrorCarga, EstadoVacio } from '@/components/estados/Estados';
 import { CrearGrupoDialog } from '@/components/grupos/CrearGrupoDialog';
 import { GrupoCard, GrupoCardSkeleton } from '@/components/grupos/GrupoCard';
+import { InvitacionesLista } from '@/components/grupos/InvitacionesLista';
 import { Button } from '@/components/ui/button';
 import { useCargaDemorada } from '@/hooks/useCargaDemorada';
 import { useFocoTitulo } from '@/hooks/useFocoTitulo';
@@ -69,7 +70,7 @@ export function GruposPage() {
         firma="tu primer grupo"
         texto="Todavía no tenés grupos. Armá uno para el viaje, el depto o el asado."
         accion={
-          <Button className="h-11" onClick={() => setCreando(true)}>
+          <Button className="h-11" data-tour="crear-grupo" onClick={() => setCreando(true)}>
             <Plus aria-hidden="true" />
             Crear un grupo
           </Button>
@@ -113,12 +114,13 @@ export function GruposPage() {
           Mis grupos
         </h1>
         {!vacio && (
-          <Button className="h-11" onClick={() => setCreando(true)}>
+          <Button className="h-11" data-tour="crear-grupo" onClick={() => setCreando(true)}>
             <Plus aria-hidden="true" />
             Crear grupo
           </Button>
         )}
       </div>
+      <InvitacionesLista />
       {cuerpo}
       <CrearGrupoDialog open={creando} onOpenChange={setCreando} />
     </div>
